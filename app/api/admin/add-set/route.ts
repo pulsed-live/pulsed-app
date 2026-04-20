@@ -62,8 +62,8 @@ export async function POST(req: NextRequest) {
   const { error: setError } = await supabase.from('sets').insert({
     venue_id: venueData.id,
     act_id: actData.id,
-    starts_at: new Date(startTime).toISOString(),
-    ends_at: new Date(endTime).toISOString(),
+    starts_at: new Date(startTime + '-05:00').toISOString(),
+    ends_at: new Date(endTime + '-05:00').toISOString(),
     status: 'scheduled',
   })
 

@@ -30,6 +30,11 @@ export default function AdminPage() {
     endTime: '',
   })
 
+  // All sets are on May 16, 2026 — prepend the date to a time string
+  function toISOWithDate(time: string) {
+    return `2026-05-16T${time}:00`
+  }
+
   useEffect(() => { loadSets() }, [])
 
   async function loadSets() {
@@ -53,7 +58,11 @@ export default function AdminPage() {
         'Content-Type': 'application/json',
         'x-admin-token': token,
       },
-      body: JSON.stringify(form),
+      body: JSON.stringify({
+        ...form,
+        startTime: toISOWithDate(form.startTime),
+        endTime: toISOWithDate(form.endTime),
+      }),
     })
 
     const json = await res.json()
@@ -163,20 +172,20 @@ export default function AdminPage() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div>
-                <label style={labelStyle}>start time</label>
+                <label style={labelStyle}>start time — may 16</label>
                 <input
                   required
-                  type="datetime-local"
+                  type="time"
                   style={{ ...inputStyle, colorScheme: 'dark' }}
                   value={form.startTime}
                   onChange={e => setForm({ ...form, startTime: e.target.value })}
                 />
               </div>
               <div>
-                <label style={labelStyle}>end time</label>
+                <label style={labelStyle}>end time — may 16</label>
                 <input
                   required
-                  type="datetime-local"
+                  type="time"
                   style={{ ...inputStyle, colorScheme: 'dark' }}
                   value={form.endTime}
                   onChange={e => setForm({ ...form, endTime: e.target.value })}
