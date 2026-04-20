@@ -135,28 +135,27 @@ export default function AdminPage() {
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: 28, marginBottom: 32 }}>
           <h2 style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', marginBottom: 24, letterSpacing: '0.05em' }}>add a set</h2>
 
-          <form onSubmit={handleAddSet} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <label style={labelStyle}>band name</label>
-                <input
-                  required
-                  style={inputStyle}
-                  placeholder="the midnight collective"
-                  value={form.bandName}
-                  onChange={e => setForm({ ...form, bandName: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>genre</label>
-                <select
-                  style={{ ...inputStyle, cursor: 'pointer' }}
-                  value={form.genre}
-                  onChange={e => setForm({ ...form, genre: e.target.value })}
-                >
-                  {GENRES.map(g => <option key={g} style={{ background: '#0a0a0f' }}>{g}</option>)}
-                </select>
-              </div>
+          <form onSubmit={handleAddSet} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div>
+              <label style={labelStyle}>band name</label>
+              <input
+                required
+                style={inputStyle}
+                placeholder="the midnight collective"
+                value={form.bandName}
+                onChange={e => setForm({ ...form, bandName: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>genre</label>
+              <select
+                style={{ ...inputStyle, cursor: 'pointer' }}
+                value={form.genre}
+                onChange={e => setForm({ ...form, genre: e.target.value })}
+              >
+                {GENRES.map(g => <option key={g} style={{ background: '#0a0a0f' }}>{g}</option>)}
+              </select>
             </div>
 
             <div>
@@ -170,27 +169,26 @@ export default function AdminPage() {
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
-              <div>
-                <label style={labelStyle}>start time — may 16</label>
-                <input
-                  required
-                  type="time"
-                  style={{ ...inputStyle, colorScheme: 'dark' }}
-                  value={form.startTime}
-                  onChange={e => setForm({ ...form, startTime: e.target.value })}
-                />
-              </div>
-              <div>
-                <label style={labelStyle}>end time — may 16</label>
-                <input
-                  required
-                  type="time"
-                  style={{ ...inputStyle, colorScheme: 'dark' }}
-                  value={form.endTime}
-                  onChange={e => setForm({ ...form, endTime: e.target.value })}
-                />
-              </div>
+            <div>
+              <label style={labelStyle}>start time</label>
+              <input
+                required
+                type="time"
+                style={{ ...inputStyle, colorScheme: 'dark' }}
+                value={form.startTime}
+                onChange={e => setForm({ ...form, startTime: e.target.value })}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>end time</label>
+              <input
+                required
+                type="time"
+                style={{ ...inputStyle, colorScheme: 'dark' }}
+                value={form.endTime}
+                onChange={e => setForm({ ...form, endTime: e.target.value })}
+              />
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, paddingTop: 4 }}>
