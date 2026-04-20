@@ -99,6 +99,7 @@ export default function AdminPage() {
 
   const inputStyle: React.CSSProperties = {
     width: '100%',
+    boxSizing: 'border-box',
     background: 'rgba(255,255,255,0.04)',
     border: '1px solid rgba(255,255,255,0.08)',
     borderRadius: 6,
@@ -107,6 +108,8 @@ export default function AdminPage() {
     fontFamily: 'inherit',
     fontSize: 13,
     outline: 'none',
+    appearance: 'none',
+    WebkitAppearance: 'none',
   }
 
   const labelStyle: React.CSSProperties = {
