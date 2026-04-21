@@ -59,11 +59,12 @@ export async function POST(req: NextRequest) {
   if (actError) return NextResponse.json({ error: actError.message }, { status: 500 })
 
   // Insert set
+  const today = new Date().toISOString().slice(0, 10) // YYYY-MM-DD
   const { error: setError } = await supabase.from('sets').insert({
     venue_id: venueData.id,
     act_id: actData.id,
-    starts_at: new Date(startTime + '-05:00').toISOString(),
-    ends_at: new Date(endTime + '-05:00').toISOString(),
+    starts_at: new Date(`${today}T${startTime}:00-05:00`).toISOString(),
+    ends_at: new Date(`${today}T${endTime}:00-05:00`).toISOString(),
     status: 'scheduled',
   })
 
