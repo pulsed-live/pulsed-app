@@ -6,7 +6,7 @@ import { supabase, type SetRow } from '@/lib/supabase'
 const STATUS_COLORS: Record<string, string> = {
   live: '#ff8c00',
   running_late: '#ffb830',
-  cancelled: '#444',
+  cancelled: '#aaa',
   scheduled: '#ff8c00',
 }
 
@@ -56,8 +56,8 @@ export default function MapPage() {
         zoomControl: false,
       })
 
-      // Dark tile layer (CartoDB Dark Matter)
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      // Light tile layer (CartoDB Positron)
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap © CARTO',
         subdomains: 'abcd',
         maxZoom: 19,
@@ -159,7 +159,7 @@ export default function MapPage() {
         href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
       />
 
-      <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#0a0a0f', fontFamily: "'JetBrains Mono', monospace" }}>
+      <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#f0efeb', fontFamily: "'JetBrains Mono', monospace" }}>
 
         {/* Map */}
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
@@ -173,15 +173,16 @@ export default function MapPage() {
           display: 'flex',
           alignItems: 'center',
           gap: 8,
-          background: 'rgba(10,10,15,0.85)',
+          background: 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(12px)',
           padding: '10px 16px',
           borderRadius: 8,
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid rgba(0,0,0,0.07)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ff8c00', display: 'inline-block', boxShadow: '0 0 8px #ff8c00' }} />
+          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ff8c00', display: 'inline-block', boxShadow: '0 0 8px #ff8c00aa' }} />
           <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.1em', fontWeight: 600 }}>PULSED</span>
-          <span style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, marginLeft: 4 }}>va-hi porchfest 2026</span>
+          <span style={{ color: 'rgba(0,0,0,0.28)', fontSize: 11, marginLeft: 4 }}>va-hi porchfest 2026</span>
         </div>
 
         {/* Set count */}
@@ -190,13 +191,14 @@ export default function MapPage() {
           top: 20,
           right: 20,
           zIndex: 1000,
-          background: 'rgba(10,10,15,0.85)',
+          background: 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(12px)',
           padding: '10px 14px',
           borderRadius: 8,
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid rgba(0,0,0,0.07)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
           fontSize: 11,
-          color: 'rgba(255,255,255,0.35)',
+          color: 'rgba(0,0,0,0.35)',
         }}>
           {sets.filter(s => s.status === 'live').length > 0
             ? <span style={{ color: '#ff8c00' }}>{sets.filter(s => s.status === 'live').length} live now</span>
@@ -212,13 +214,14 @@ export default function MapPage() {
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
-            background: 'rgba(10,10,15,0.95)',
+            background: 'rgba(255,255,255,0.96)',
             backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid rgba(0,0,0,0.07)',
             borderRadius: 12,
             padding: '20px 24px',
             minWidth: 280,
             maxWidth: 360,
+            boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
           }}>
             {/* Status badge */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
@@ -226,10 +229,10 @@ export default function MapPage() {
                 fontSize: 10,
                 padding: '3px 10px',
                 borderRadius: 20,
-                background: selected.status === 'live' ? 'rgba(255,140,0,0.15)' :
-                             selected.status === 'running_late' ? 'rgba(255,184,48,0.15)' :
-                             selected.status === 'cancelled' ? 'rgba(255,60,60,0.1)' :
-                             'rgba(255,255,255,0.05)',
+                background: selected.status === 'live' ? 'rgba(255,140,0,0.12)' :
+                             selected.status === 'running_late' ? 'rgba(255,184,48,0.12)' :
+                             selected.status === 'cancelled' ? 'rgba(200,50,50,0.08)' :
+                             'rgba(0,0,0,0.05)',
                 color: STATUS_COLORS[selected.status],
                 letterSpacing: '0.05em',
               }}>
@@ -237,27 +240,27 @@ export default function MapPage() {
               </span>
               <button
                 onClick={() => setSelected(null)}
-                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.2)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
+                style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.22)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
               >
                 ✕
               </button>
             </div>
 
             {/* Band info */}
-            <div style={{ fontSize: 18, color: 'rgba(255,255,255,0.9)', marginBottom: 4 }}>
+            <div style={{ fontSize: 18, color: 'rgba(0,0,0,0.85)', marginBottom: 4 }}>
               {selected.acts?.name}
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', marginBottom: 12 }}>
+            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.35)', marginBottom: 12 }}>
               {selected.acts?.genre}
             </div>
 
             {/* Address */}
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.25)', marginBottom: 10 }}>
+            <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', marginBottom: 10 }}>
               {selected.venues?.address}
             </div>
 
             {/* Times */}
-            <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.4)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>
               {new Date(selected.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               {' — '}
               {new Date(selected.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -274,13 +277,14 @@ export default function MapPage() {
           bottom: 32,
           right: 20,
           zIndex: 1000,
-          background: 'rgba(10,10,15,0.85)',
+          background: 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(12px)',
           padding: '12px 14px',
           borderRadius: 8,
-          border: '1px solid rgba(255,255,255,0.06)',
+          border: '1px solid rgba(0,0,0,0.07)',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
           fontSize: 10,
-          color: 'rgba(255,255,255,0.3)',
+          color: 'rgba(0,0,0,0.35)',
           display: 'flex',
           flexDirection: 'column',
           gap: 6,
@@ -288,7 +292,7 @@ export default function MapPage() {
           {[
             { color: '#ff8c00', label: 'live' },
             { color: '#ffb830', label: 'running late' },
-            { color: '#444', label: 'cancelled' },
+            { color: '#aaa', label: 'cancelled' },
           ].map(({ color, label }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, display: 'inline-block' }} />
