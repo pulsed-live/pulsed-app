@@ -52,7 +52,7 @@ export default function MapPage() {
 
       const map = L.map(mapRef.current!, {
         center: [33.7838, -84.3647], // Virginia Highland, Atlanta
-        zoom: 15,
+        zoom: 16,
         zoomControl: false,
       })
 
