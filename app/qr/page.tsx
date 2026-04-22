@@ -22,31 +22,44 @@ export default function QRPage() {
           0%, 100% { transform: translate(0, 0) scale(1); }
           50% { transform: translate(25px, 35px) scale(1.04); }
         }
+        @keyframes driftD {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          40% { transform: translate(-30px, -40px) scale(1.06); }
+          80% { transform: translate(20px, 15px) scale(0.96); }
+        }
         .qr-blob {
           position: fixed;
           border-radius: 50%;
           pointer-events: none;
+          z-index: 0;
         }
         .qr-blob-a {
-          width: 700px; height: 600px;
-          top: -180px; right: -160px;
-          background: radial-gradient(ellipse at 40% 40%, rgba(210,205,200,0.38) 0%, rgba(165,160,155,0.15) 45%, transparent 75%);
-          filter: blur(120px);
+          width: 900px; height: 800px;
+          top: -220px; right: -200px;
+          background: radial-gradient(ellipse at 40% 40%, rgba(215,208,200,0.58) 0%, rgba(170,163,155,0.28) 40%, rgba(130,125,120,0.08) 65%, transparent 80%);
+          filter: blur(110px);
           animation: driftA 26s ease-in-out infinite;
         }
         .qr-blob-b {
-          width: 650px; height: 750px;
-          bottom: -120px; left: -180px;
-          background: radial-gradient(ellipse at 60% 50%, rgba(215,208,200,0.30) 0%, rgba(170,163,155,0.11) 50%, transparent 78%);
-          filter: blur(140px);
+          width: 850px; height: 900px;
+          bottom: -160px; left: -220px;
+          background: radial-gradient(ellipse at 60% 50%, rgba(210,205,198,0.50) 0%, rgba(165,160,153,0.22) 45%, rgba(120,115,110,0.06) 68%, transparent 82%);
+          filter: blur(130px);
           animation: driftB 32s ease-in-out infinite;
         }
         .qr-blob-c {
-          width: 500px; height: 480px;
-          top: 35%; left: 25%;
-          background: radial-gradient(ellipse at 50% 50%, rgba(190,183,175,0.20) 0%, transparent 70%);
-          filter: blur(100px);
+          width: 600px; height: 560px;
+          top: 30%; left: 20%;
+          background: radial-gradient(ellipse at 50% 50%, rgba(200,193,183,0.38) 0%, rgba(155,148,138,0.12) 55%, transparent 75%);
+          filter: blur(90px);
           animation: driftC 20s ease-in-out infinite;
+        }
+        .qr-blob-d {
+          width: 500px; height: 420px;
+          top: 10%; left: 5%;
+          background: radial-gradient(ellipse at 55% 45%, rgba(255,140,0,0.08) 0%, rgba(255,120,0,0.03) 50%, transparent 72%);
+          filter: blur(100px);
+          animation: driftD 38s ease-in-out infinite;
         }
       `}</style>
 
@@ -54,6 +67,7 @@ export default function QRPage() {
       <div className="qr-blob qr-blob-a" />
       <div className="qr-blob qr-blob-b" />
       <div className="qr-blob qr-blob-c" />
+      <div className="qr-blob qr-blob-d" />
 
       <div
         style={{
