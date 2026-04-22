@@ -79,11 +79,21 @@ export default function AdminPage() {
   }
 
   async function updateStatus(setId: string, status: string) {
-    await fetch('/api/admin/update-status', {
+    // Optimistic update so the dropdown doesn't snap back
+    setSets(prev => prev.map(s => s.id === setId ? { ...s, status: status as SetRow['status'] } : s))
+
+    const res = await fetch('/api/admin/update-status', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-admin-token': token },
       body: JSON.stringify({ setId, status }),
     })
+    if (!res.ok) {
+      const json = await res.json().catch(() => ({}))
+      setMessage(json.error || `update failed (${res.status})`)
+      setMessageOk(false)
+      loadSets() // revert to real DB state on failure
+      return
+    }
     loadSets()
   }
 
