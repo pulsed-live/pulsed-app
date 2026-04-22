@@ -31,7 +31,10 @@ export default function MapPage() {
       .from('sets')
       .select('*, venues(*), acts(*)')
       .order('starts_at')
-    if (data) setSets(data)
+    if (data) {
+      setSets(data)
+      setSelected(prev => prev ? (data.find(s => s.id === prev.id) ?? prev) : null)
+    }
   }
 
   // Init map once
