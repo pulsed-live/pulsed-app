@@ -27,6 +27,10 @@ export default function QRPage() {
           40% { transform: translate(-30px, -40px) scale(1.06); }
           80% { transform: translate(20px, 15px) scale(0.96); }
         }
+        body, html {
+          background: #0a0a0f;
+          margin: 0;
+        }
         .qr-blob {
           position: fixed;
           border-radius: 50%;
@@ -72,7 +76,7 @@ export default function QRPage() {
       <div
         style={{
           minHeight: '100vh',
-          background: '#0a0a0f',
+          background: 'transparent',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
