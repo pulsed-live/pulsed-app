@@ -30,9 +30,9 @@ export default function AdminPage() {
     endTime: '',
   })
 
-  // All sets are on May 16, 2026 — prepend the date to a time string
+  // All sets are on May 16, 2026 (Eastern Daylight Time = UTC-4)
   function toISOWithDate(time: string) {
-    return `2026-05-16T${time}:00`
+    return `2026-05-16T${time}:00-04:00`
   }
 
   useEffect(() => { loadSets() }, [])
