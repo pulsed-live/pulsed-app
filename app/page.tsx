@@ -81,11 +81,22 @@ export default function MapPage() {
     }
   }, [])
 
-  // Load sets on mount + poll every 60s
+  // Load sets on mount + poll every 30s + real-time subscription
   useEffect(() => {
     loadSets()
-    const interval = setInterval(loadSets, 60000)
-    return () => clearInterval(interval)
+    const interval = setInterval(loadSets, 30000)
+
+    const channel = supabase
+      .channel('sets-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sets' }, () => {
+        loadSets()
+      })
+      .subscribe()
+
+    return () => {
+      clearInterval(interval)
+      supabase.removeChannel(channel)
+    }
   }, [])
 
   // Update markers when sets change
