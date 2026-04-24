@@ -17,6 +17,7 @@ export type Act = {
   id: string
   name: string
   genre: string
+  link?: string
 }
 
 export type SetRow = {

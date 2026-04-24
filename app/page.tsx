@@ -274,7 +274,7 @@ export default function MapPage() {
             </div>
 
             {/* Times */}
-            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)' }}>
+            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginBottom: selected.acts?.link ? 14 : 0 }}>
               {new Date(selected.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               {' — '}
               {new Date(selected.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -282,6 +282,27 @@ export default function MapPage() {
                 <span style={{ color: '#ff8c00', marginLeft: 8 }}>● now</span>
               )}
             </div>
+
+            {/* Link */}
+            {selected.acts?.link && (
+              <a
+                href={selected.acts.link.startsWith('http') ? selected.acts.link : `https://${selected.acts.link}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  fontSize: 11,
+                  color: '#ff8c00',
+                  border: '1px solid rgba(255,140,0,0.3)',
+                  borderRadius: 20,
+                  padding: '5px 14px',
+                  textDecoration: 'none',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                see more →
+              </a>
+            )}
           </div>
         )}
 
