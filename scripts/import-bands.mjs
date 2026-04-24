@@ -55,9 +55,8 @@ if (dateIndex !== -1 && args[dateIndex + 1]) {
   eventDate = `${y}-${m}-${d}`
 }
 
-const BASE_URL = isProd
-  ? 'https://map.pulsedapp.live'
-  : 'http://localhost:3000'
+const BASE_URL = process.env.BASE_URL
+  || (isProd ? 'https://pulsed-app-alpha.vercel.app' : 'http://localhost:3000')
 
 const ENDPOINT = `${BASE_URL}/api/admin/add-set`
 const ADMIN_TOKEN = process.env.ADMIN_TOKEN || 'porchfest-admin-2026'
@@ -197,9 +196,9 @@ async function main() {
       continue
     }
 
-    // Build full datetime strings expected by the API: "YYYY-MM-DDTHH:MM"
-    const startFull = `${eventDate}T${startTime}`
-    const endFull = `${eventDate}T${endTime}`
+    // Build full datetime strings with EDT offset (event is May 16 in Virginia Highland, Atlanta)
+    const startFull = `${eventDate}T${startTime}:00-04:00`
+    const endFull = `${eventDate}T${endTime}:00-04:00`
 
     const payload = { bandName, genre, address, startTime: startFull, endTime: endFull }
 
@@ -210,6 +209,9 @@ async function main() {
       added++
       continue
     }
+
+    // Nominatim rate limit: 1 req/sec
+    await new Promise(r => setTimeout(r, 1200))
 
     try {
       const result = await postJSON(ENDPOINT, payload, { 'x-admin-token': ADMIN_TOKEN })

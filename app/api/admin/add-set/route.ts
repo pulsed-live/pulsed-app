@@ -58,7 +58,17 @@ export async function POST(req: NextRequest) {
 
   if (actError) return NextResponse.json({ error: actError.message }, { status: 500 })
 
-  // Insert set — startTime/endTime are already full ISO strings ("2026-05-16T14:00:00")
+  // Skip if this set already exists (safe to re-run)
+  const { data: existing } = await supabase
+    .from('sets')
+    .select('id')
+    .eq('venue_id', venueData.id)
+    .eq('act_id', actData.id)
+    .eq('starts_at', startTime)
+    .maybeSingle()
+
+  if (existing) return NextResponse.json({ ok: true, skipped: true })
+
   const { error: setError } = await supabase.from('sets').insert({
     venue_id: venueData.id,
     act_id: actData.id,
