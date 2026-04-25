@@ -326,6 +326,29 @@ export default function MapPage() {
         </div>
         </div>
 
+        {/* No results message */}
+        {sets.length > 0 && filteredSets.length === 0 && (
+          <div style={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            zIndex: 1000,
+            background: 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(12px)',
+            padding: '14px 22px',
+            borderRadius: 10,
+            border: '1px solid rgba(0,0,0,0.07)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+            fontSize: 12,
+            color: 'rgba(0,0,0,0.4)',
+            textAlign: 'center',
+            pointerEvents: 'none',
+          }}>
+            no sets match this filter
+          </div>
+        )}
+
         {/* Selected set panel */}
         {selected && (
           <div style={{
