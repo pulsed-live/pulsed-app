@@ -325,7 +325,7 @@ export default function AdminPage() {
 
         {/* Footer link to map */}
         <div style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <a href="/map" style={{ color: '#ff8c00', fontSize: 12, textDecoration: 'none', opacity: 0.7 }}>
+          <a href="/" style={{ color: '#ff8c00', fontSize: 12, textDecoration: 'none', opacity: 0.7 }}>
             → view public map
           </a>
         </div>
