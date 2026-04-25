@@ -5,9 +5,9 @@ import { supabase, type SetRow } from '@/lib/supabase'
 
 const STATUS_COLORS: Record<string, string> = {
   live: '#ff8c00',
-  running_late: '#ffb830',
-  cancelled: '#aaa',
-  scheduled: '#ff8c00',
+  running_late: '#ff8c00', // treated same as live until brand colors arrive
+  cancelled: '#e03c3c',
+  scheduled: '#888',
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -190,9 +190,9 @@ export default function MapPage() {
               height: 14px;
               border-radius: 50%;
               background: ${color};
-              border: 2px solid ${isCancelled ? '#333' : color};
+              border: 2px solid ${color};
               box-shadow: ${isCancelled ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
-              opacity: ${isCancelled ? '0.4' : '1'};
+              opacity: ${isCancelled ? '0.55' : '1'};
               cursor: pointer;
             "></div>
           `,
@@ -349,8 +349,8 @@ export default function MapPage() {
                 padding: '3px 10px',
                 borderRadius: 20,
                 background: selected.status === 'live' ? 'rgba(255,140,0,0.12)' :
-                             selected.status === 'running_late' ? 'rgba(255,184,48,0.12)' :
-                             selected.status === 'cancelled' ? 'rgba(200,50,50,0.08)' :
+                             selected.status === 'running_late' ? 'rgba(255,140,0,0.12)' :
+                             selected.status === 'cancelled' ? 'rgba(224,60,60,0.1)' :
                              'rgba(0,0,0,0.05)',
                 color: STATUS_COLORS[selected.status],
                 letterSpacing: '0.05em',
@@ -427,8 +427,8 @@ export default function MapPage() {
         }}>
           {[
             { color: '#ff8c00', label: 'live' },
-            { color: '#ffb830', label: 'running late' },
-            { color: '#aaa', label: 'cancelled' },
+            { color: '#888', label: 'scheduled' },
+            { color: '#e03c3c', label: 'cancelled' },
           ].map(({ color, label }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
               <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, display: 'inline-block' }} />
