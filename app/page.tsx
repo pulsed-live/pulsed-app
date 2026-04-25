@@ -281,13 +281,19 @@ export default function MapPage() {
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1000,
+          maxWidth: 'calc(100vw - 40px)',
+          // fade hint at right edge
+          WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
+          maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
+        }}>
+        <div style={{
           display: 'flex',
           gap: 6,
-          maxWidth: 'calc(100vw - 40px)',
           overflowX: 'auto',
           paddingBottom: 2,
-          // hide scrollbar
+          paddingRight: 24,
           msOverflowStyle: 'none',
+          scrollbarWidth: 'none',
         }}>
           {/* Live now toggle */}
           <button
@@ -317,6 +323,7 @@ export default function MapPage() {
               {genre}
             </button>
           ))}
+        </div>
         </div>
 
         {/* Selected set panel */}
