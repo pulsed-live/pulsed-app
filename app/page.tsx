@@ -268,9 +268,11 @@ export default function MapPage() {
           fontSize: 11,
           color: 'rgba(0,0,0,0.35)',
         }}>
-          {sets.filter(s => s.status === 'live').length > 0
-            ? <span style={{ color: '#ff8c00' }}>{sets.filter(s => s.status === 'live').length} live now</span>
-            : `${sets.length} sets`
+          {(filterLive || filterGenre)
+            ? `${filteredSets.length} of ${sets.length}`
+            : sets.filter(s => s.status === 'live').length > 0
+              ? <span style={{ color: '#ff8c00' }}>{sets.filter(s => s.status === 'live').length} live now</span>
+              : `${sets.length} sets`
           }
         </div>
 
@@ -286,7 +288,7 @@ export default function MapPage() {
           WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
           maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
         }}>
-        <div style={{
+        <div className="filter-scroll" style={{
           display: 'flex',
           gap: 6,
           overflowX: 'auto',
