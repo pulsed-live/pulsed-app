@@ -17,6 +17,11 @@ const STATUS_LABEL: Record<string, string> = {
   scheduled: 'scheduled',
 }
 
+function isNowPlaying(set: SetRow) {
+  const now = Date.now()
+  return now >= new Date(set.starts_at).getTime() && now <= new Date(set.ends_at).getTime()
+}
+
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null)
   const leafletMap = useRef<any>(null)
@@ -24,6 +29,18 @@ export default function MapPage() {
   const [sets, setSets] = useState<SetRow[]>([])
   const [selected, setSelected] = useState<SetRow | null>(null)
   const [loaded, setLoaded] = useState(false)
+  const [filterLive, setFilterLive] = useState(false)
+  const [filterGenre, setFilterGenre] = useState<string | null>(null)
+
+  // Unique sorted genres from loaded sets
+  const genres = Array.from(new Set(sets.map(s => s.acts?.genre).filter(Boolean) as string[])).sort()
+
+  // Sets visible on map after filters applied
+  const filteredSets = sets.filter(set => {
+    if (filterLive && !isNowPlaying(set)) return false
+    if (filterGenre && set.acts?.genre !== filterGenre) return false
+    return true
+  })
 
   // Load sets from Supabase
   async function loadSets() {
@@ -37,15 +54,20 @@ export default function MapPage() {
     }
   }
 
+  // Clear selection when it gets filtered out
+  useEffect(() => {
+    if (!selected) return
+    const stillVisible = filteredSets.some(s => s.id === selected.id)
+    if (!stillVisible) setSelected(null)
+  }, [filterLive, filterGenre])
+
   // Init map once
   useEffect(() => {
     if (leafletMap.current) return
 
-    // Dynamic import so Leaflet doesn't run on server
     import('leaflet').then(L => {
       if (!mapRef.current || leafletMap.current) return
 
-      // Fix default icon paths in Next.js
       delete (L.Icon.Default.prototype as any)._getIconUrl
       L.Icon.Default.mergeOptions({
         iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -54,22 +76,20 @@ export default function MapPage() {
       })
 
       const map = L.map(mapRef.current!, {
-        center: [33.7838, -84.3647], // Virginia Highland, Atlanta
+        center: [33.7838, -84.3647],
         zoom: 16,
         zoomControl: false,
       })
 
-      // Light tile layer (CartoDB Positron)
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '© OpenStreetMap © CARTO',
         subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map)
 
-      // Zoom control bottom right
       L.control.zoom({ position: 'bottomright' }).addTo(map)
 
-      // GPS dot — track user location
+      // GPS dot
       let locationMarker: any = null
       let accuracyCircle: any = null
 
@@ -134,29 +154,26 @@ export default function MapPage() {
     }
   }, [])
 
-  // Update markers when sets change
+  // Update markers when sets or filters change
   useEffect(() => {
     if (!loaded || !leafletMap.current) return
 
     import('leaflet').then(L => {
-      // Clear existing markers
       markersRef.current.forEach(m => m.remove())
       markersRef.current = []
 
-      // Group sets by venue
+      // Group filtered sets by venue
       const byVenue = new Map<string, SetRow[]>()
-      sets.forEach(set => {
+      filteredSets.forEach(set => {
         if (!set.venues) return
-        const key = set.venue_id
-        if (!byVenue.has(key)) byVenue.set(key, [])
-        byVenue.get(key)!.push(set)
+        if (!byVenue.has(set.venue_id)) byVenue.set(set.venue_id, [])
+        byVenue.get(set.venue_id)!.push(set)
       })
 
-      byVenue.forEach((venueSets, venueId) => {
+      byVenue.forEach((venueSets) => {
         const venue = venueSets[0].venues!
         if (!venue.lat || !venue.lng) return
 
-        // Pick the most interesting status for the pin color
         const statusPriority = ['live', 'running_late', 'scheduled', 'cancelled']
         const topSet = venueSets.sort((a, b) =>
           statusPriority.indexOf(a.status) - statusPriority.indexOf(b.status)
@@ -185,28 +202,30 @@ export default function MapPage() {
 
         const marker = L.marker([venue.lat, venue.lng], { icon })
           .addTo(leafletMap.current)
-          .on('click', () => {
-            setSelected(venueSets[0])
-          })
+          .on('click', () => setSelected(venueSets[0]))
 
         markersRef.current.push(marker)
       })
     })
-  }, [sets, loaded])
+  }, [filteredSets, loaded])
 
-  // "now playing" check — is this set currently active?
-  function isNowPlaying(set: SetRow) {
-    const now = Date.now()
-    return now >= new Date(set.starts_at).getTime() && now <= new Date(set.ends_at).getTime()
+  const pillBase: React.CSSProperties = {
+    flexShrink: 0,
+    fontSize: 11,
+    padding: '6px 14px',
+    borderRadius: 20,
+    cursor: 'pointer',
+    fontFamily: 'inherit',
+    letterSpacing: '0.05em',
+    whiteSpace: 'nowrap',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+    backdropFilter: 'blur(12px)',
+    transition: 'all 0.15s ease',
   }
 
   return (
     <>
-      {/* Leaflet CSS */}
-      <link
-        rel="stylesheet"
-        href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-      />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
 
       <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#f0efeb', fontFamily: "'JetBrains Mono', monospace" }}>
 
@@ -255,6 +274,51 @@ export default function MapPage() {
           }
         </div>
 
+        {/* Filter bar */}
+        <div style={{
+          position: 'absolute',
+          top: 72,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1000,
+          display: 'flex',
+          gap: 6,
+          maxWidth: 'calc(100vw - 40px)',
+          overflowX: 'auto',
+          paddingBottom: 2,
+          // hide scrollbar
+          msOverflowStyle: 'none',
+        }}>
+          {/* Live now toggle */}
+          <button
+            onClick={() => setFilterLive(f => !f)}
+            style={{
+              ...pillBase,
+              background: filterLive ? '#ff8c00' : 'rgba(255,255,255,0.88)',
+              border: filterLive ? '1px solid #ff8c00' : '1px solid rgba(0,0,0,0.1)',
+              color: filterLive ? '#fff' : 'rgba(0,0,0,0.5)',
+            }}
+          >
+            ● live now
+          </button>
+
+          {/* Genre pills */}
+          {genres.map(genre => (
+            <button
+              key={genre}
+              onClick={() => setFilterGenre(g => g === genre ? null : genre)}
+              style={{
+                ...pillBase,
+                background: filterGenre === genre ? 'rgba(255,140,0,0.1)' : 'rgba(255,255,255,0.88)',
+                border: filterGenre === genre ? '1px solid #ff8c00' : '1px solid rgba(0,0,0,0.1)',
+                color: filterGenre === genre ? '#ff8c00' : 'rgba(0,0,0,0.5)',
+              }}
+            >
+              {genre}
+            </button>
+          ))}
+        </div>
+
         {/* Selected set panel */}
         {selected && (
           <div style={{
@@ -272,7 +336,6 @@ export default function MapPage() {
             maxWidth: 360,
             boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
           }}>
-            {/* Status badge */}
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{
                 fontSize: 10,
@@ -295,7 +358,6 @@ export default function MapPage() {
               </button>
             </div>
 
-            {/* Band info */}
             <div style={{ fontSize: 18, color: 'rgba(0,0,0,0.85)', marginBottom: 4 }}>
               {selected.acts?.name}
             </div>
@@ -303,12 +365,10 @@ export default function MapPage() {
               {selected.acts?.genre}
             </div>
 
-            {/* Address */}
             <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', marginBottom: 10 }}>
               {selected.venues?.address}
             </div>
 
-            {/* Times */}
             <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginBottom: selected.acts?.link ? 14 : 0 }}>
               {new Date(selected.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               {' — '}
@@ -318,7 +378,6 @@ export default function MapPage() {
               )}
             </div>
 
-            {/* Link */}
             {selected.acts?.link && (
               <a
                 href={selected.acts.link.startsWith('http') ? selected.acts.link : `https://${selected.acts.link}`}
