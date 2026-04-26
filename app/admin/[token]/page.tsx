@@ -189,12 +189,17 @@ export default function AdminPage() {
       <div style={{ maxWidth: 720, margin: '0 auto' }}>
 
         {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff8c00', display: 'inline-block', boxShadow: '0 0 8px #ff8c00' }} />
-            <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.1em' }}>PULSED admin</span>
+        <div style={{ marginBottom: 28, display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ff8c00', display: 'inline-block', boxShadow: '0 0 8px #ff8c00' }} />
+              <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.1em' }}>PULSED admin</span>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>virginia highland porchfest 2026 — may 16</p>
           </div>
-          <p style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>virginia highland porchfest 2026 — may 16</p>
+          <a href="/" style={{ color: '#ff8c00', fontSize: 12, textDecoration: 'none', opacity: 0.7, marginTop: 2 }}>
+            → public map
+          </a>
         </div>
 
         {/* Live now summary bar */}
@@ -489,12 +494,6 @@ export default function AdminPage() {
           )}
         </div>
 
-        {/* Footer */}
-        <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <a href="/" style={{ color: '#ff8c00', fontSize: 12, textDecoration: 'none', opacity: 0.7 }}>
-            → view public map
-          </a>
-        </div>
 
       </div>
     </div>

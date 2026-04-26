@@ -533,15 +533,16 @@ export default function MapPage() {
               {selectedSponsor.address}
             </div>
 
-            {selectedSponsor.url && (
+            <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <a
-                href={selectedSponsor.url}
+                href={`https://www.google.com/maps/dir/?api=1&destination=${selectedSponsor.lat},${selectedSponsor.lng}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
                   display: 'inline-block',
                   fontSize: 11,
                   color: '#ff8c00',
+                  background: 'rgba(255,140,0,0.08)',
                   border: '1px solid rgba(255,140,0,0.3)',
                   borderRadius: 20,
                   padding: '5px 14px',
@@ -549,9 +550,28 @@ export default function MapPage() {
                   letterSpacing: '0.05em',
                 }}
               >
-                visit →
+                directions →
               </a>
-            )}
+              {selectedSponsor.url && (
+                <a
+                  href={selectedSponsor.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    fontSize: 11,
+                    color: 'rgba(0,0,0,0.4)',
+                    border: '1px solid rgba(0,0,0,0.1)',
+                    borderRadius: 20,
+                    padding: '5px 14px',
+                    textDecoration: 'none',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  website →
+                </a>
+              )}
+            </div>
           </div>
         )}
 
