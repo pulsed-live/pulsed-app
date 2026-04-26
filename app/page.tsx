@@ -221,47 +221,47 @@ export default function MapPage() {
 
         markersRef.current.push(marker)
       })
-    })
 
-    // Sponsor pins — always visible, not affected by filters
-    SPONSORS.forEach(sponsor => {
-      const sponsorIcon = L.divIcon({
-        className: '',
-        html: `
-          <div style="position: relative; text-align: center; width: 44px; margin-left: -11px;">
-            <div class="sponsor-pin" style="
-              width: 22px;
-              height: 22px;
-              border-radius: 50%;
-              background: #ff8c00;
-              border: 3px solid #fff;
-              cursor: pointer;
-              margin: 0 auto;
-            "></div>
-            <div style="
-              margin-top: 4px;
-              font-size: 8px;
-              font-family: 'JetBrains Mono', monospace;
-              font-weight: 600;
-              color: #ff8c00;
-              background: rgba(255,255,255,0.92);
-              padding: 2px 5px;
-              border-radius: 4px;
-              white-space: nowrap;
-              letter-spacing: 0.02em;
-              display: inline-block;
-            ">${sponsor.name}</div>
-          </div>
-        `,
-        iconSize: [44, 44],
-        iconAnchor: [22, 11],
+      // Sponsor pins — always visible, not affected by filters
+      SPONSORS.forEach(sponsor => {
+        const sponsorIcon = L.divIcon({
+          className: '',
+          html: `
+            <div style="position: relative; text-align: center; width: 44px; margin-left: -11px;">
+              <div class="sponsor-pin" style="
+                width: 22px;
+                height: 22px;
+                border-radius: 50%;
+                background: #ff8c00;
+                border: 3px solid #fff;
+                cursor: pointer;
+                margin: 0 auto;
+              "></div>
+              <div style="
+                margin-top: 4px;
+                font-size: 8px;
+                font-family: 'JetBrains Mono', monospace;
+                font-weight: 600;
+                color: #ff8c00;
+                background: rgba(255,255,255,0.92);
+                padding: 2px 5px;
+                border-radius: 4px;
+                white-space: nowrap;
+                letter-spacing: 0.02em;
+                display: inline-block;
+              ">${sponsor.name}</div>
+            </div>
+          `,
+          iconSize: [44, 44],
+          iconAnchor: [22, 11],
+        })
+
+        const marker = L.marker([sponsor.lat, sponsor.lng], { icon: sponsorIcon, zIndexOffset: 500 })
+          .addTo(leafletMap.current)
+          .on('click', () => { setSelectedSponsor(sponsor); setSelected(null) })
+
+        markersRef.current.push(marker)
       })
-
-      const marker = L.marker([sponsor.lat, sponsor.lng], { icon: sponsorIcon, zIndexOffset: 500 })
-        .addTo(leafletMap.current)
-        .on('click', () => { setSelectedSponsor(sponsor); setSelected(null) })
-
-      markersRef.current.push(marker)
     })
   }, [filteredSets, loaded])
 
