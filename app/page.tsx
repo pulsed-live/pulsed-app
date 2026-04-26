@@ -218,7 +218,7 @@ export default function MapPage() {
 
         const marker = L.marker([venue.lat, venue.lng], { icon })
           .addTo(leafletMap.current)
-          .on('click', () => setSelected(venueSets[0]))
+          .on('click', () => { setSelected(venueSets[0]); setSelectedSponsor(null) })
 
         markersRef.current.push(marker)
       })
