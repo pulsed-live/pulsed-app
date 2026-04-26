@@ -30,3 +30,10 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 .filter-scroll::-webkit-scrollbar { display: none; }
+
+@keyframes sponsorPulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255,140,0,0.5), 0 0 12px rgba(255,140,0,0.4); }
+  70%  { box-shadow: 0 0 0 8px rgba(255,140,0,0), 0 0 12px rgba(255,140,0,0.4); }
+  100% { box-shadow: 0 0 0 0 rgba(255,140,0,0), 0 0 12px rgba(255,140,0,0.4); }
+}
+.sponsor-pin { animation: sponsorPulse 2s ease-out infinite; }

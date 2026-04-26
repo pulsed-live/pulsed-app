@@ -3,6 +3,20 @@
 import { useEffect, useState, useRef } from 'react'
 import { supabase, type SetRow } from '@/lib/supabase'
 
+type Sponsor = {
+  name: string
+  address: string
+  lat: number
+  lng: number
+  url?: string
+}
+
+// Hardcoded sponsors — swap in real bars once confirmed
+const SPONSORS: Sponsor[] = [
+  { name: "Dark Horse Tavern", address: "816 N Highland Ave NE", lat: 33.7768, lng: -84.3526, url: "https://darkhorseatlanta.com" },
+  { name: "Moe's & Joe's", address: "1033 N Highland Ave NE", lat: 33.7792, lng: -84.3521, url: "https://moesandjoesatl.com" },
+]
+
 const STATUS_COLORS: Record<string, string> = {
   live: '#ff8c00',
   running_late: '#ff8c00', // treated same as live until brand colors arrive
@@ -28,6 +42,7 @@ export default function MapPage() {
   const markersRef = useRef<any[]>([])
   const [sets, setSets] = useState<SetRow[]>([])
   const [selected, setSelected] = useState<SetRow | null>(null)
+  const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null)
   const [loaded, setLoaded] = useState(false)
   const [filterLive, setFilterLive] = useState(false)
   const [filterGenre, setFilterGenre] = useState<string | null>(null)
@@ -206,6 +221,47 @@ export default function MapPage() {
 
         markersRef.current.push(marker)
       })
+    })
+
+    // Sponsor pins — always visible, not affected by filters
+    SPONSORS.forEach(sponsor => {
+      const sponsorIcon = L.divIcon({
+        className: '',
+        html: `
+          <div style="position: relative; text-align: center; width: 44px; margin-left: -11px;">
+            <div class="sponsor-pin" style="
+              width: 22px;
+              height: 22px;
+              border-radius: 50%;
+              background: #ff8c00;
+              border: 3px solid #fff;
+              cursor: pointer;
+              margin: 0 auto;
+            "></div>
+            <div style="
+              margin-top: 4px;
+              font-size: 8px;
+              font-family: 'JetBrains Mono', monospace;
+              font-weight: 600;
+              color: #ff8c00;
+              background: rgba(255,255,255,0.92);
+              padding: 2px 5px;
+              border-radius: 4px;
+              white-space: nowrap;
+              letter-spacing: 0.02em;
+              display: inline-block;
+            ">${sponsor.name}</div>
+          </div>
+        `,
+        iconSize: [44, 44],
+        iconAnchor: [22, 11],
+      })
+
+      const marker = L.marker([sponsor.lat, sponsor.lng], { icon: sponsorIcon, zIndexOffset: 500 })
+        .addTo(leafletMap.current)
+        .on('click', () => { setSelectedSponsor(sponsor); setSelected(null) })
+
+      markersRef.current.push(marker)
     })
   }, [filteredSets, loaded])
 
@@ -427,6 +483,72 @@ export default function MapPage() {
                 }}
               >
                 see more →
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* Sponsor popup */}
+        {selectedSponsor && (
+          <div style={{
+            position: 'absolute',
+            bottom: 32,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            background: 'rgba(255,255,255,0.96)',
+            backdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,140,0,0.2)',
+            borderRadius: 12,
+            padding: '20px 24px',
+            minWidth: 280,
+            maxWidth: 360,
+            boxShadow: '0 4px 24px rgba(255,140,0,0.12)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{
+                fontSize: 10,
+                padding: '3px 10px',
+                borderRadius: 20,
+                background: 'rgba(255,140,0,0.1)',
+                color: '#ff8c00',
+                letterSpacing: '0.08em',
+                fontWeight: 600,
+              }}>
+                ★ pulsed sponsor
+              </span>
+              <button
+                onClick={() => setSelectedSponsor(null)}
+                style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.22)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ fontSize: 18, color: 'rgba(0,0,0,0.85)', marginBottom: 4 }}>
+              {selectedSponsor.name}
+            </div>
+            <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', marginBottom: 14 }}>
+              {selectedSponsor.address}
+            </div>
+
+            {selectedSponsor.url && (
+              <a
+                href={selectedSponsor.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  display: 'inline-block',
+                  fontSize: 11,
+                  color: '#ff8c00',
+                  border: '1px solid rgba(255,140,0,0.3)',
+                  borderRadius: 20,
+                  padding: '5px 14px',
+                  textDecoration: 'none',
+                  letterSpacing: '0.05em',
+                }}
+              >
+                visit →
               </a>
             )}
           </div>
