@@ -1,21 +1,7 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import { supabase, type SetRow } from '@/lib/supabase'
-
-type Sponsor = {
-  name: string
-  address: string
-  lat: number
-  lng: number
-  url?: string
-}
-
-// Hardcoded sponsors — swap in real bars once confirmed
-const SPONSORS: Sponsor[] = [
-  { name: "Dark Horse Tavern", address: "816 N Highland Ave NE", lat: 33.7768, lng: -84.3526, url: "https://darkhorseatlanta.com" },
-  { name: "Moe's & Joe's", address: "1033 N Highland Ave NE", lat: 33.7792, lng: -84.3521, url: "https://moesandjoesatl.com" },
-]
+import { supabase, type SetRow, type Sponsor } from '@/lib/supabase'
 
 const STATUS_COLORS: Record<string, string> = {
   live: '#ff8c00',
@@ -41,6 +27,7 @@ export default function MapPage() {
   const leafletMap = useRef<any>(null)
   const markersRef = useRef<any[]>([])
   const [sets, setSets] = useState<SetRow[]>([])
+  const [sponsors, setSponsors] = useState<Sponsor[]>([])
   const [selected, setSelected] = useState<SetRow | null>(null)
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null)
   const [loaded, setLoaded] = useState(false)
@@ -67,6 +54,11 @@ export default function MapPage() {
       setSets(data)
       setSelected(prev => prev ? (data.find(s => s.id === prev.id) ?? prev) : null)
     }
+  }
+
+  async function loadSponsors() {
+    const { data } = await supabase.from('sponsors').select('*').order('created_at')
+    if (data) setSponsors(data)
   }
 
   // Clear selection when it gets filtered out
@@ -151,21 +143,30 @@ export default function MapPage() {
     }
   }, [])
 
-  // Load sets on mount + poll every 30s + real-time subscription
+  // Load sets + sponsors on mount; poll sets every 30s; real-time for both
   useEffect(() => {
     loadSets()
+    loadSponsors()
     const interval = setInterval(loadSets, 30000)
 
-    const channel = supabase
+    const setsChannel = supabase
       .channel('sets-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'sets' }, () => {
         loadSets()
       })
       .subscribe()
 
+    const sponsorsChannel = supabase
+      .channel('sponsors-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'sponsors' }, () => {
+        loadSponsors()
+      })
+      .subscribe()
+
     return () => {
       clearInterval(interval)
-      supabase.removeChannel(channel)
+      supabase.removeChannel(setsChannel)
+      supabase.removeChannel(sponsorsChannel)
     }
   }, [])
 
@@ -223,7 +224,7 @@ export default function MapPage() {
       })
 
       // Sponsor pins — always visible, not affected by filters
-      SPONSORS.forEach(sponsor => {
+      sponsors.forEach(sponsor => {
         const sponsorIcon = L.divIcon({
           className: '',
           html: `
@@ -263,7 +264,7 @@ export default function MapPage() {
         markersRef.current.push(marker)
       })
     })
-  }, [filteredSets, loaded])
+  }, [filteredSets, loaded, sponsors])
 
   const pillBase: React.CSSProperties = {
     flexShrink: 0,

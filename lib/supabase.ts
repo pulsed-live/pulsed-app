@@ -30,3 +30,13 @@ export type SetRow = {
   venues?: Venue
   acts?: Act
 }
+
+export type Sponsor = {
+  id: string
+  name: string
+  address: string
+  lat: number
+  lng: number
+  url?: string
+  created_at: string
+}
