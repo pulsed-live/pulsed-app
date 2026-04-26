@@ -535,7 +535,7 @@ export default function MapPage() {
 
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
               <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${selectedSponsor.lat},${selectedSponsor.lng}`}
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(selectedSponsor.name + ', Atlanta, GA')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
