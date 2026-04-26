@@ -212,6 +212,103 @@ export default function AdminPage() {
           </div>
         )}
 
+        {/* Sponsors section */}
+        <div style={{ marginBottom: 24, paddingBottom: 24, borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.05em' }}>
+              sponsors
+              {sponsors.length > 0 && (
+                <span style={{ color: '#ff8c00', marginLeft: 8 }}>● {sponsors.length} active</span>
+              )}
+            </div>
+            <button
+              onClick={() => { setShowSponsorForm(f => !f); setSponsorMessage('') }}
+              style={{
+                background: showSponsorForm ? 'rgba(255,255,255,0.08)' : 'rgba(255,140,0,0.15)',
+                color: showSponsorForm ? 'rgba(255,255,255,0.6)' : '#ff8c00',
+                border: `1px solid ${showSponsorForm ? 'rgba(255,255,255,0.08)' : 'rgba(255,140,0,0.3)'}`,
+                borderRadius: 6,
+                padding: '7px 14px',
+                fontFamily: 'inherit',
+                fontSize: 11,
+                fontWeight: 600,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {showSponsorForm ? 'cancel' : '+ add sponsor'}
+            </button>
+          </div>
+
+          {/* Add sponsor form */}
+          {showSponsorForm && (
+            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: 20, marginBottom: 16 }}>
+              <form onSubmit={handleAddSponsor} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <div>
+                  <label style={labelStyle}>bar name</label>
+                  <input required style={inputStyle} placeholder="Dark Horse Tavern"
+                    value={sponsorForm.name} onChange={e => setSponsorForm({ ...sponsorForm, name: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>address</label>
+                  <input required style={inputStyle} placeholder="816 N Highland Ave NE"
+                    value={sponsorForm.address} onChange={e => setSponsorForm({ ...sponsorForm, address: e.target.value })} />
+                </div>
+                <div>
+                  <label style={labelStyle}>website (optional)</label>
+                  <input style={inputStyle} placeholder="https://darkhorseatlanta.com"
+                    value={sponsorForm.url} onChange={e => setSponsorForm({ ...sponsorForm, url: e.target.value })} />
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                  <button type="submit" style={{
+                    background: '#ff8c00', color: '#0a0a0f', border: 'none', borderRadius: 6,
+                    padding: '9px 20px', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  }}>
+                    add sponsor
+                  </button>
+                  {sponsorMessage && (
+                    <span style={{ fontSize: 12, color: sponsorMessageOk ? 'rgba(255,255,255,0.35)' : '#ff4444' }}>
+                      {sponsorMessage}
+                    </span>
+                  )}
+                </div>
+              </form>
+            </div>
+          )}
+
+          {/* Sponsor list */}
+          {sponsors.length === 0 ? (
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>no sponsors yet</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              {sponsors.map(sponsor => (
+                <div key={sponsor.id} style={{
+                  background: 'rgba(255,140,0,0.06)', border: '1px solid rgba(255,140,0,0.2)',
+                  borderRadius: 8, padding: '10px 14px',
+                  display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12,
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 13, color: '#ff8c00', fontWeight: 600, marginBottom: 2 }}>{sponsor.name}</div>
+                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>
+                      {sponsor.address}
+                      {sponsor.url && (
+                        <a href={sponsor.url} target="_blank" rel="noopener noreferrer"
+                          style={{ color: 'rgba(255,140,0,0.5)', marginLeft: 8, textDecoration: 'none' }}>
+                          {sponsor.url.replace('https://', '')}
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  <button onClick={() => deleteSponsor(sponsor.id)}
+                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontSize: 14, padding: 4, lineHeight: 1 }}>
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         {/* Search + add button row */}
         <div style={{ display: 'flex', gap: 10, marginBottom: 16 }}>
           <input
@@ -388,131 +485,6 @@ export default function AdminPage() {
                   </div>
                 )
               })}
-            </div>
-          )}
-        </div>
-
-        {/* Sponsors section */}
-        <div style={{ marginTop: 40, paddingTop: 24, borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-            <div>
-              <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.2)', letterSpacing: '0.05em' }}>
-                sponsors
-                {sponsors.length > 0 && (
-                  <span style={{ color: '#ff8c00', marginLeft: 8 }}>● {sponsors.length} active</span>
-                )}
-              </div>
-            </div>
-            <button
-              onClick={() => { setShowSponsorForm(f => !f); setSponsorMessage('') }}
-              style={{
-                background: showSponsorForm ? 'rgba(255,255,255,0.08)' : 'rgba(255,140,0,0.15)',
-                color: showSponsorForm ? 'rgba(255,255,255,0.6)' : '#ff8c00',
-                border: `1px solid ${showSponsorForm ? 'rgba(255,255,255,0.08)' : 'rgba(255,140,0,0.3)'}`,
-                borderRadius: 6,
-                padding: '7px 14px',
-                fontFamily: 'inherit',
-                fontSize: 11,
-                fontWeight: 600,
-                cursor: 'pointer',
-                whiteSpace: 'nowrap',
-              }}
-            >
-              {showSponsorForm ? 'cancel' : '+ add sponsor'}
-            </button>
-          </div>
-
-          {/* Add sponsor form */}
-          {showSponsorForm && (
-            <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10, padding: 20, marginBottom: 16 }}>
-              <form onSubmit={handleAddSponsor} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                <div>
-                  <label style={labelStyle}>bar name</label>
-                  <input
-                    required
-                    style={inputStyle}
-                    placeholder="Dark Horse Tavern"
-                    value={sponsorForm.name}
-                    onChange={e => setSponsorForm({ ...sponsorForm, name: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>address</label>
-                  <input
-                    required
-                    style={inputStyle}
-                    placeholder="816 N Highland Ave NE"
-                    value={sponsorForm.address}
-                    onChange={e => setSponsorForm({ ...sponsorForm, address: e.target.value })}
-                  />
-                </div>
-                <div>
-                  <label style={labelStyle}>website (optional)</label>
-                  <input
-                    style={inputStyle}
-                    placeholder="https://darkhorseatlanta.com"
-                    value={sponsorForm.url}
-                    onChange={e => setSponsorForm({ ...sponsorForm, url: e.target.value })}
-                  />
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                  <button
-                    type="submit"
-                    style={{
-                      background: '#ff8c00', color: '#0a0a0f', border: 'none', borderRadius: 6,
-                      padding: '9px 20px', fontFamily: 'inherit', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                    }}
-                  >
-                    add sponsor
-                  </button>
-                  {sponsorMessage && (
-                    <span style={{ fontSize: 12, color: sponsorMessageOk ? 'rgba(255,255,255,0.35)' : '#ff4444' }}>
-                      {sponsorMessage}
-                    </span>
-                  )}
-                </div>
-              </form>
-            </div>
-          )}
-
-          {/* Sponsor list */}
-          {sponsors.length === 0 ? (
-            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.2)' }}>no sponsors yet</p>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-              {sponsors.map(sponsor => (
-                <div key={sponsor.id} style={{
-                  background: 'rgba(255,140,0,0.06)',
-                  border: '1px solid rgba(255,140,0,0.2)',
-                  borderRadius: 8,
-                  padding: '10px 14px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12,
-                }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 13, color: '#ff8c00', fontWeight: 600, marginBottom: 2 }}>
-                      {sponsor.name}
-                    </div>
-                    <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)' }}>
-                      {sponsor.address}
-                      {sponsor.url && (
-                        <a href={sponsor.url} target="_blank" rel="noopener noreferrer"
-                          style={{ color: 'rgba(255,140,0,0.5)', marginLeft: 8, textDecoration: 'none' }}>
-                          {sponsor.url.replace('https://', '')}
-                        </a>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => deleteSponsor(sponsor.id)}
-                    style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.15)', cursor: 'pointer', fontSize: 14, padding: 4, lineHeight: 1 }}
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
             </div>
           )}
         </div>
