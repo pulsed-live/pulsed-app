@@ -4,10 +4,33 @@ import { useEffect, useState, useRef } from 'react'
 import { supabase, type SetRow, type Sponsor } from '@/lib/supabase'
 
 const STATUS_COLORS: Record<string, string> = {
-  live: '#ff8c00',
-  running_late: '#ff8c00', // treated same as live until brand colors arrive
   cancelled: '#e03c3c',
   scheduled: '#888',
+}
+
+// One color per UTC hour — maps to a warm sunrise→sunset gradient across the day.
+// Bands in the same time slot share the same glow color when live.
+const SLOT_COLORS: Record<number, string> = {
+  14: '#ffd060', // 10 AM EDT — bright morning yellow
+  15: '#ffbe30', // 11 AM EDT — golden amber
+  16: '#ffb030', // 12 PM EDT — warm amber
+  17: '#ff8c00', // 1 PM EDT  — brand orange (peak)
+  18: '#ff7210', // 2 PM EDT  — deeper orange
+  19: '#ff6b10', // 3 PM EDT  — deep orange
+  20: '#e85500', // 4 PM EDT  — burnt orange
+  21: '#cc4400', // 5 PM EDT  — late afternoon rust
+  23: '#a83300', // 7 PM EDT  — evening deep red-orange
+}
+
+function slotColor(set: SetRow): string {
+  const utcHour = new Date(set.starts_at).getUTCHours()
+  return SLOT_COLORS[utcHour] ?? '#ff8c00'
+}
+
+function pinColor(set: SetRow): string {
+  const es = effectiveStatus(set)
+  if (es === 'live' || es === 'running_late') return slotColor(set)
+  return STATUS_COLORS[es] ?? '#888'
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -205,7 +228,7 @@ export default function MapPage() {
           statusPriority.indexOf(effectiveStatus(a)) - statusPriority.indexOf(effectiveStatus(b))
         )[0]
 
-        const color = STATUS_COLORS[effectiveStatus(topSet)] || '#ff8c00'
+        const color = pinColor(topSet)
         const isCancelled = effectiveStatus(topSet) === 'cancelled'
         const isLive = effectiveStatus(topSet) === 'live'
 
@@ -461,11 +484,10 @@ export default function MapPage() {
                 fontSize: 10,
                 padding: '3px 10px',
                 borderRadius: 20,
-                background: effectiveStatus(selected) === 'live' ? 'rgba(255,140,0,0.12)' :
-                             effectiveStatus(selected) === 'running_late' ? 'rgba(255,140,0,0.12)' :
-                             effectiveStatus(selected) === 'cancelled' ? 'rgba(224,60,60,0.1)' :
-                             'rgba(0,0,0,0.05)',
-                color: STATUS_COLORS[effectiveStatus(selected)],
+                background: effectiveStatus(selected) === 'cancelled' ? 'rgba(224,60,60,0.1)' :
+                             effectiveStatus(selected) === 'scheduled' ? 'rgba(0,0,0,0.05)' :
+                             `${pinColor(selected)}1a`,
+                color: pinColor(selected),
                 letterSpacing: '0.05em',
               }}>
                 {STATUS_LABEL[effectiveStatus(selected)]}
@@ -494,7 +516,7 @@ export default function MapPage() {
               {' — '}
               {new Date(selected.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               {isNowPlaying(selected) && (
-                <span style={{ color: '#ff8c00', marginLeft: 8 }}>● now</span>
+                <span style={{ color: pinColor(selected), marginLeft: 8 }}>● now</span>
               )}
             </div>
 
@@ -647,13 +669,24 @@ export default function MapPage() {
           flexDirection: 'column',
           gap: 6,
         }}>
+          {/* Live — gradient pill to show "color = time slot" */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{
+              width: 24,
+              height: 7,
+              borderRadius: 4,
+              background: 'linear-gradient(to right, #ffd060, #ff8c00, #a83300)',
+              display: 'inline-block',
+              flexShrink: 0,
+            }} />
+            live · by time
+          </div>
           {[
-            { color: '#ff8c00', label: 'live' },
             { color: '#888', label: 'scheduled' },
             { color: '#e03c3c', label: 'cancelled' },
           ].map(({ color, label }) => (
             <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, display: 'inline-block' }} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 }} />
               {label}
             </div>
           ))}
