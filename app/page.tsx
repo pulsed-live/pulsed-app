@@ -8,18 +8,18 @@ const STATUS_COLORS: Record<string, string> = {
   scheduled: '#888',
 }
 
-// One color per UTC hour — maps to a warm sunrise→sunset gradient across the day.
-// Bands in the same time slot share the same glow color when live.
+// One color per UTC hour — each slot gets a distinct hue so bands playing at
+// different times are clearly distinguishable on the map when live.
 const SLOT_COLORS: Record<number, string> = {
-  14: '#ffd060', // 10 AM EDT — bright morning yellow
-  15: '#ffbe30', // 11 AM EDT — golden amber
-  16: '#ffb030', // 12 PM EDT — warm amber
-  17: '#ff8c00', // 1 PM EDT  — brand orange (peak)
-  18: '#ff7210', // 2 PM EDT  — deeper orange
-  19: '#ff6b10', // 3 PM EDT  — deep orange
-  20: '#e85500', // 4 PM EDT  — burnt orange
-  21: '#cc4400', // 5 PM EDT  — late afternoon rust
-  23: '#a83300', // 7 PM EDT  — evening deep red-orange
+  14: '#FF2D55', // 10 AM EDT — hot pink / red
+  15: '#FF9500', // 11 AM EDT — orange
+  16: '#FFD60A', // 12 PM EDT — yellow
+  17: '#30D158', // 1 PM EDT  — green
+  18: '#00C7BE', // 2 PM EDT  — teal
+  19: '#5AC8FA', // 3 PM EDT  — sky blue
+  20: '#0A84FF', // 4 PM EDT  — blue
+  21: '#BF5AF2', // 5 PM EDT  — purple
+  23: '#FF375F', // 7 PM EDT  — deep pink / magenta
 }
 
 function slotColor(set: SetRow): string {
@@ -675,7 +675,7 @@ export default function MapPage() {
               width: 24,
               height: 7,
               borderRadius: 4,
-              background: 'linear-gradient(to right, #ffd060, #ff8c00, #a83300)',
+              background: 'linear-gradient(to right, #FF2D55, #FFD60A, #30D158, #0A84FF, #BF5AF2)',
               display: 'inline-block',
               flexShrink: 0,
             }} />
