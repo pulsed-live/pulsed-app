@@ -22,6 +22,16 @@ function isNowPlaying(set: SetRow) {
   return now >= new Date(set.starts_at).getTime() && now <= new Date(set.ends_at).getTime()
 }
 
+// Derives display status from DB status + current time.
+// Manual overrides (cancelled, running_late) always win.
+// Otherwise, live window is computed from starts_at/ends_at.
+function effectiveStatus(set: SetRow): SetRow['status'] {
+  if (set.status === 'cancelled') return 'cancelled'
+  if (set.status === 'running_late') return 'running_late'
+  if (isNowPlaying(set)) return 'live'
+  return set.status
+}
+
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null)
   const leafletMap = useRef<any>(null)
@@ -192,25 +202,40 @@ export default function MapPage() {
 
         const statusPriority = ['live', 'running_late', 'scheduled', 'cancelled']
         const topSet = venueSets.sort((a, b) =>
-          statusPriority.indexOf(a.status) - statusPriority.indexOf(b.status)
+          statusPriority.indexOf(effectiveStatus(a)) - statusPriority.indexOf(effectiveStatus(b))
         )[0]
 
-        const color = STATUS_COLORS[topSet.status] || '#ff8c00'
-        const isCancelled = topSet.status === 'cancelled'
+        const color = STATUS_COLORS[effectiveStatus(topSet)] || '#ff8c00'
+        const isCancelled = effectiveStatus(topSet) === 'cancelled'
+        const isLive = effectiveStatus(topSet) === 'live'
 
         const icon = L.divIcon({
           className: '',
           html: `
-            <div style="
-              width: 14px;
-              height: 14px;
-              border-radius: 50%;
-              background: ${color};
-              border: 2px solid ${color};
-              box-shadow: ${isCancelled ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
-              opacity: ${isCancelled ? '0.55' : '1'};
-              cursor: pointer;
-            "></div>
+            <div style="position: relative; width: 14px; height: 14px; overflow: visible;">
+              ${isLive ? `
+              <div style="
+                position: absolute;
+                top: 0; left: 0;
+                width: 14px; height: 14px;
+                border-radius: 50%;
+                border: 2px solid ${color};
+                animation: liveRipple 2s ease-out infinite;
+                pointer-events: none;
+              "></div>` : ''}
+              <div style="
+                position: relative;
+                z-index: 1;
+                width: 14px;
+                height: 14px;
+                border-radius: 50%;
+                background: ${color};
+                border: 2px solid ${color};
+                box-shadow: ${isCancelled ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
+                opacity: ${isCancelled ? '0.55' : '1'};
+                cursor: pointer;
+              "></div>
+            </div>
           `,
           iconSize: [14, 14],
           iconAnchor: [7, 7],
@@ -283,6 +308,12 @@ export default function MapPage() {
   return (
     <>
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <style>{`
+        @keyframes liveRipple {
+          0%   { transform: scale(1);   opacity: 0.7; }
+          100% { transform: scale(3.2); opacity: 0;   }
+        }
+      `}</style>
 
       <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#f0efeb', fontFamily: "'JetBrains Mono', monospace" }}>
 
@@ -327,8 +358,8 @@ export default function MapPage() {
         }}>
           {(filterLive || filterGenre)
             ? `${filteredSets.length} of ${sets.length}`
-            : sets.filter(s => s.status === 'live').length > 0
-              ? <span style={{ color: '#ff8c00' }}>{sets.filter(s => s.status === 'live').length} live now</span>
+            : sets.filter(s => effectiveStatus(s) === 'live').length > 0
+              ? <span style={{ color: '#ff8c00' }}>{sets.filter(s => effectiveStatus(s) === 'live').length} live now</span>
               : `${sets.length} sets`
           }
         </div>
@@ -430,14 +461,14 @@ export default function MapPage() {
                 fontSize: 10,
                 padding: '3px 10px',
                 borderRadius: 20,
-                background: selected.status === 'live' ? 'rgba(255,140,0,0.12)' :
-                             selected.status === 'running_late' ? 'rgba(255,140,0,0.12)' :
-                             selected.status === 'cancelled' ? 'rgba(224,60,60,0.1)' :
+                background: effectiveStatus(selected) === 'live' ? 'rgba(255,140,0,0.12)' :
+                             effectiveStatus(selected) === 'running_late' ? 'rgba(255,140,0,0.12)' :
+                             effectiveStatus(selected) === 'cancelled' ? 'rgba(224,60,60,0.1)' :
                              'rgba(0,0,0,0.05)',
-                color: STATUS_COLORS[selected.status],
+                color: STATUS_COLORS[effectiveStatus(selected)],
                 letterSpacing: '0.05em',
               }}>
-                {STATUS_LABEL[selected.status]}
+                {STATUS_LABEL[effectiveStatus(selected)]}
               </span>
               <button
                 onClick={() => setSelected(null)}
@@ -467,25 +498,47 @@ export default function MapPage() {
               )}
             </div>
 
-            {selected.acts?.link && (
-              <a
-                href={selected.acts.link.startsWith('http') ? selected.acts.link : `https://${selected.acts.link}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                style={{
-                  display: 'inline-block',
-                  fontSize: 11,
-                  color: '#ff8c00',
-                  border: '1px solid rgba(255,140,0,0.3)',
-                  borderRadius: 20,
-                  padding: '5px 14px',
-                  textDecoration: 'none',
-                  letterSpacing: '0.05em',
-                }}
-              >
-                see more →
-              </a>
-            )}
+            <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+              {selected.acts?.link && (
+                <a
+                  href={selected.acts.link.startsWith('http') ? selected.acts.link : `https://${selected.acts.link}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    fontSize: 11,
+                    color: '#ff8c00',
+                    border: '1px solid rgba(255,140,0,0.3)',
+                    borderRadius: 20,
+                    padding: '5px 14px',
+                    textDecoration: 'none',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  see more →
+                </a>
+              )}
+              {selected.venues?.address && (
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(selected.venues.address)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    display: 'inline-block',
+                    fontSize: 11,
+                    color: '#ff8c00',
+                    background: 'rgba(255,140,0,0.08)',
+                    border: '1px solid rgba(255,140,0,0.3)',
+                    borderRadius: 20,
+                    padding: '5px 14px',
+                    textDecoration: 'none',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  directions →
+                </a>
+              )}
+            </div>
           </div>
         )}
 
@@ -578,8 +631,9 @@ export default function MapPage() {
         {/* Legend */}
         <div style={{
           position: 'absolute',
-          bottom: 32,
+          bottom: selected || selectedSponsor ? 280 : 32,
           right: 20,
+          transition: 'bottom 0.2s ease',
           zIndex: 1000,
           background: 'rgba(255,255,255,0.88)',
           backdropFilter: 'blur(12px)',

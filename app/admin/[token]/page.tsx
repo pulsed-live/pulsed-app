@@ -473,7 +473,13 @@ export default function AdminPage() {
                           colorScheme: 'dark',
                         }}
                         value={set.status}
-                        onChange={e => updateStatus(set.id, e.target.value)}
+                        onChange={e => {
+                          const next = e.target.value
+                          if (next === 'cancelled') {
+                            if (!confirm(`Cancel "${set.acts?.name}"? This will show them as cancelled on the public map.`)) return
+                          }
+                          updateStatus(set.id, next)
+                        }}
                       >
                         <option value="scheduled">scheduled</option>
                         <option value="live">live</option>
