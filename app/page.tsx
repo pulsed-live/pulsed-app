@@ -322,14 +322,17 @@ export default function MapPage() {
 
   const pillBase: React.CSSProperties = {
     flexShrink: 0,
-    fontSize: 11,
-    padding: '6px 14px',
+    fontSize: 12,
+    padding: '10px 16px',
     borderRadius: 20,
     cursor: 'pointer',
     fontFamily: 'inherit',
-    letterSpacing: '0.05em',
+    letterSpacing: '0.04em',
     whiteSpace: 'nowrap',
     transition: 'all 0.15s ease',
+    minHeight: 40,
+    display: 'inline-flex',
+    alignItems: 'center',
   }
 
   const panelBase: React.CSSProperties = {
