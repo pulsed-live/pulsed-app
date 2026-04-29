@@ -385,20 +385,18 @@ export default function MapPage() {
           padding: '10px 16px',
         }}>
           <span style={{
-            width: 7, height: 7, borderRadius: '50%',
+            width: 8, height: 8, borderRadius: '50%',
             background: '#ff8c00', display: 'inline-block',
-            boxShadow: '0 0 8px #ff8c00aa', flexShrink: 0,
+            boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
           }} />
-          <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.12em', fontWeight: 700 }}>
-            PULSED
-          </span>
-          <span style={{ color: NAVY_TEXT, fontSize: 12, letterSpacing: '0.02em', opacity: 0.7 }}>×</span>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/pf26-logo-navy.png"
-            alt="Virginia Highland Porchfest 2026"
-            style={{ height: 22, opacity: 0.82, display: 'block' }}
-          />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <span style={{ color: '#ff8c00', fontSize: 14, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
+              PULSED
+            </span>
+            <span style={{ color: '#426368', fontSize: 9, letterSpacing: '0.12em', fontWeight: 600, lineHeight: 1, opacity: 0.75, textTransform: 'uppercase' }}>
+              × va-hi porchfest '26
+            </span>
+          </div>
         </div>
 
         {/* ── Legend — top left, below header ── */}
