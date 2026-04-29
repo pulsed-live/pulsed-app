@@ -8,18 +8,18 @@ const STATUS_COLORS: Record<string, string> = {
   scheduled: '#888',
 }
 
-// One color per UTC hour — each slot gets a distinct hue so bands playing at
-// different times are clearly distinguishable on the map when live.
+// Official VHDA time-slot colors (from PF_Colors-ForKent.pdf)
+// One earthy, distinct hue per UTC hour (EDT = UTC-4)
 const SLOT_COLORS: Record<number, string> = {
-  14: '#FF2D55', // 10 AM EDT — hot pink / red
-  15: '#FF9500', // 11 AM EDT — orange
-  16: '#FFD60A', // 12 PM EDT — yellow
-  17: '#30D158', // 1 PM EDT  — green
-  18: '#00C7BE', // 2 PM EDT  — teal
-  19: '#5AC8FA', // 3 PM EDT  — sky blue
-  20: '#0A84FF', // 4 PM EDT  — blue
-  21: '#BF5AF2', // 5 PM EDT  — purple
-  23: '#FF375F', // 7 PM EDT  — deep pink / magenta
+  14: '#81817f', // 10 AM EDT — warm gray
+  15: '#619cab', // 11 AM EDT — teal-blue
+  16: '#c25534', // 12 PM EDT — brick red
+  17: '#619882', // 1 PM EDT  — teal-green
+  18: '#7A525B', // 2 PM EDT  — dusty purple
+  19: '#C17C2E', // 3 PM EDT  — gold
+  20: '#426368', // 4 PM EDT  — dark navy
+  21: '#787342', // 5 PM EDT  — olive
+  23: '#1b2424', // 7 PM EDT  — near-black
 }
 
 function slotColor(set: SetRow): string {
@@ -54,6 +54,12 @@ function effectiveStatus(set: SetRow): SetRow['status'] {
   if (isNowPlaying(set)) return 'live'
   return set.status
 }
+
+// VHDA design tokens
+const IVORY = 'rgba(233,232,228,0.94)'
+const IVORY_BORDER = 'rgba(66,99,104,0.14)'
+const IVORY_SHADOW = '0 2px 12px rgba(66,99,104,0.10)'
+const NAVY_TEXT = 'rgba(66,99,104,0.55)'
 
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null)
@@ -139,8 +145,8 @@ export default function MapPage() {
 
         accuracyCircle = L.circle(e.latlng, {
           radius: e.accuracy / 2,
-          color: '#4a90e2',
-          fillColor: '#4a90e2',
+          color: '#619882',
+          fillColor: '#619882',
           fillOpacity: 0.08,
           weight: 1,
         }).addTo(map)
@@ -151,9 +157,9 @@ export default function MapPage() {
             width: 14px;
             height: 14px;
             border-radius: 50%;
-            background: #4a90e2;
+            background: #619882;
             border: 2.5px solid #fff;
-            box-shadow: 0 0 0 2px #4a90e2, 0 2px 6px rgba(0,0,0,0.25);
+            box-shadow: 0 0 0 2px #619882, 0 2px 6px rgba(0,0,0,0.25);
           "></div>`,
           iconSize: [14, 14],
           iconAnchor: [7, 7],
@@ -292,7 +298,7 @@ export default function MapPage() {
                 font-family: 'JetBrains Mono', monospace;
                 font-weight: 600;
                 color: #ff8c00;
-                background: rgba(255,255,255,0.92);
+                background: rgba(233,232,228,0.95);
                 padding: 2px 5px;
                 border-radius: 4px;
                 white-space: nowrap;
@@ -323,138 +329,133 @@ export default function MapPage() {
     fontFamily: 'inherit',
     letterSpacing: '0.05em',
     whiteSpace: 'nowrap',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-    backdropFilter: 'blur(12px)',
     transition: 'all 0.15s ease',
   }
+
+  const panelBase: React.CSSProperties = {
+    background: IVORY,
+    backdropFilter: 'blur(14px)',
+    WebkitBackdropFilter: 'blur(14px)',
+    border: `1px solid ${IVORY_BORDER}`,
+    borderRadius: 10,
+    boxShadow: IVORY_SHADOW,
+  }
+
+  const livePinCount = sets.filter(s => effectiveStatus(s) === 'live').length
 
   return (
     <>
       <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <link rel="preconnect" href="https://fonts.googleapis.com" />
+      <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+      <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
       <style>{`
         @keyframes liveRipple {
           0%   { transform: scale(1);   opacity: 0.7; }
           100% { transform: scale(3.2); opacity: 0;   }
         }
+        /* Raise zoom controls above filter bar */
+        .leaflet-bottom.leaflet-right { bottom: 68px !important; right: 12px !important; }
+        /* Style attribution to match VHDA brand */
+        .leaflet-control-attribution {
+          font-family: 'JetBrains Mono', monospace !important;
+          font-size: 8px !important;
+          color: rgba(66,99,104,0.45) !important;
+          background: rgba(233,232,228,0.82) !important;
+          border-top: none !important;
+          padding: 3px 8px !important;
+          border-radius: 6px 0 0 0 !important;
+        }
+        .leaflet-control-attribution a { color: rgba(66,99,104,0.55) !important; }
+        /* Hide filter scrollbar */
+        .filter-scroll::-webkit-scrollbar { display: none; }
+        .filter-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#f0efeb', fontFamily: "'JetBrains Mono', monospace" }}>
+      <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#E9E8E4', fontFamily: "'JetBrains Mono', monospace" }}>
 
         {/* Map */}
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
 
-        {/* Header */}
+        {/* ── Header — top left ── */}
         <div style={{
-          position: 'absolute',
-          top: 20,
-          left: 20,
-          zIndex: 1000,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          background: 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(12px)',
+          position: 'absolute', top: 14, left: 14, zIndex: 1000,
+          ...panelBase,
+          display: 'flex', alignItems: 'center', gap: 10,
           padding: '10px 16px',
-          borderRadius: 8,
-          border: '1px solid rgba(0,0,0,0.07)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
         }}>
-          <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ff8c00', display: 'inline-block', boxShadow: '0 0 8px #ff8c00aa' }} />
-          <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.1em', fontWeight: 600 }}>PULSED</span>
-          <span style={{ color: 'rgba(0,0,0,0.28)', fontSize: 11, marginLeft: 4 }}>va-hi porchfest 2026</span>
+          <span style={{
+            width: 7, height: 7, borderRadius: '50%',
+            background: '#ff8c00', display: 'inline-block',
+            boxShadow: '0 0 8px #ff8c00aa', flexShrink: 0,
+          }} />
+          <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.12em', fontWeight: 700 }}>
+            PULSED
+          </span>
+          <span style={{ color: NAVY_TEXT, fontSize: 12, letterSpacing: '0.02em', opacity: 0.7 }}>×</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/pf26-logo-navy.png"
+            alt="Virginia Highland Porchfest 2026"
+            style={{ height: 22, opacity: 0.82, display: 'block' }}
+          />
         </div>
 
-        {/* Set count */}
+        {/* ── Legend — top left, below header ── */}
         <div style={{
-          position: 'absolute',
-          top: 20,
-          right: 20,
-          zIndex: 1000,
-          background: 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(12px)',
-          padding: '10px 14px',
+          position: 'absolute', top: 72, left: 14, zIndex: 1000,
+          ...panelBase,
           borderRadius: 8,
-          border: '1px solid rgba(0,0,0,0.07)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-          fontSize: 11,
-          color: 'rgba(0,0,0,0.35)',
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: '6px 12px',
+          fontSize: 9, color: NAVY_TEXT,
+          letterSpacing: '0.06em',
+        }}>
+          {/* Live — VHDA-palette gradient bar */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{
+              width: 24, height: 6, borderRadius: 3, flexShrink: 0,
+              background: 'linear-gradient(to right, #619cab, #c25534, #C17C2E, #619882, #426368)',
+              display: 'inline-block',
+            }} />
+            live · by time
+          </div>
+          <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#888', display: 'inline-block', flexShrink: 0 }} />
+            scheduled
+          </div>
+          <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#e03c3c', display: 'inline-block', flexShrink: 0 }} />
+            cancelled
+          </div>
+        </div>
+
+        {/* ── Set count — top right ── */}
+        <div style={{
+          position: 'absolute', top: 14, right: 14, zIndex: 1000,
+          ...panelBase,
+          padding: '10px 14px',
+          fontSize: 11, color: NAVY_TEXT,
         }}>
           {(filterLive || filterGenre)
             ? `${filteredSets.length} of ${sets.length}`
-            : sets.filter(s => effectiveStatus(s) === 'live').length > 0
-              ? <span style={{ color: '#ff8c00' }}>{sets.filter(s => effectiveStatus(s) === 'live').length} live now</span>
+            : livePinCount > 0
+              ? <span style={{ color: '#ff8c00' }}>{livePinCount} live now</span>
               : `${sets.length} sets`
           }
         </div>
 
-        {/* Filter bar */}
-        <div style={{
-          position: 'absolute',
-          top: 72,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          zIndex: 1000,
-          maxWidth: 'calc(100vw - 40px)',
-          // fade hint at right edge
-          WebkitMaskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
-          maskImage: 'linear-gradient(to right, black 85%, transparent 100%)',
-        }}>
-        <div className="filter-scroll" style={{
-          display: 'flex',
-          gap: 6,
-          overflowX: 'auto',
-          paddingBottom: 2,
-          paddingRight: 24,
-          msOverflowStyle: 'none',
-          scrollbarWidth: 'none',
-        }}>
-          {/* Live now toggle */}
-          <button
-            onClick={() => setFilterLive(f => !f)}
-            style={{
-              ...pillBase,
-              background: filterLive ? '#ff8c00' : 'rgba(255,255,255,0.88)',
-              border: filterLive ? '1px solid #ff8c00' : '1px solid rgba(0,0,0,0.1)',
-              color: filterLive ? '#fff' : 'rgba(0,0,0,0.5)',
-            }}
-          >
-            ● live now
-          </button>
-
-          {/* Genre pills */}
-          {genres.map(genre => (
-            <button
-              key={genre}
-              onClick={() => setFilterGenre(g => g === genre ? null : genre)}
-              style={{
-                ...pillBase,
-                background: filterGenre === genre ? 'rgba(255,140,0,0.1)' : 'rgba(255,255,255,0.88)',
-                border: filterGenre === genre ? '1px solid #ff8c00' : '1px solid rgba(0,0,0,0.1)',
-                color: filterGenre === genre ? '#ff8c00' : 'rgba(0,0,0,0.5)',
-              }}
-            >
-              {genre}
-            </button>
-          ))}
-        </div>
-        </div>
-
-        {/* No results message */}
+        {/* ── No-results message ── */}
         {sets.length > 0 && filteredSets.length === 0 && (
           <div style={{
-            position: 'absolute',
-            top: '50%',
-            left: '50%',
+            position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
             zIndex: 1000,
-            background: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(12px)',
+            ...panelBase,
             padding: '14px 22px',
-            borderRadius: 10,
-            border: '1px solid rgba(0,0,0,0.07)',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-            fontSize: 12,
-            color: 'rgba(0,0,0,0.4)',
+            fontSize: 12, color: NAVY_TEXT,
             textAlign: 'center',
             pointerEvents: 'none',
           }}>
@@ -462,22 +463,24 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Selected set panel */}
+        {/* ── Selected set panel — floats above filter bar ── */}
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 32,
+            bottom: 80,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
-            background: 'rgba(255,255,255,0.96)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(0,0,0,0.07)',
-            borderRadius: 12,
+            background: 'rgba(233,232,228,0.97)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            border: `1px solid ${IVORY_BORDER}`,
+            borderRadius: 14,
             padding: '20px 24px',
-            minWidth: 280,
-            maxWidth: 360,
-            boxShadow: '0 4px 24px rgba(0,0,0,0.12)',
+            minWidth: 290,
+            maxWidth: 370,
+            boxShadow: '0 6px 28px rgba(66,99,104,0.14)',
+            fontFamily: "'JetBrains Mono', monospace",
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{
@@ -485,33 +488,34 @@ export default function MapPage() {
                 padding: '3px 10px',
                 borderRadius: 20,
                 background: effectiveStatus(selected) === 'cancelled' ? 'rgba(224,60,60,0.1)' :
-                             effectiveStatus(selected) === 'scheduled' ? 'rgba(0,0,0,0.05)' :
+                             effectiveStatus(selected) === 'scheduled' ? 'rgba(66,99,104,0.07)' :
                              `${pinColor(selected)}1a`,
-                color: pinColor(selected),
+                color: effectiveStatus(selected) === 'scheduled' ? NAVY_TEXT : pinColor(selected),
                 letterSpacing: '0.05em',
               }}>
                 {STATUS_LABEL[effectiveStatus(selected)]}
               </span>
               <button
                 onClick={() => setSelected(null)}
-                style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.22)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
+                style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ fontSize: 18, color: 'rgba(0,0,0,0.85)', marginBottom: 4 }}>
+            {/* Band name — Montserrat per organizer spec */}
+            <div style={{ fontSize: 18, fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#1b2424', marginBottom: 4 }}>
               {selected.acts?.name}
             </div>
-            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.35)', marginBottom: 12 }}>
+            <div style={{ fontSize: 12, fontFamily: "'Montserrat', sans-serif", color: NAVY_TEXT, marginBottom: 12 }}>
               {selected.acts?.genre}
             </div>
 
-            <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', marginBottom: 10 }}>
+            <div style={{ fontSize: 11, color: NAVY_TEXT, opacity: 0.7, marginBottom: 10 }}>
               {selected.venues?.address}
             </div>
 
-            <div style={{ fontSize: 12, color: 'rgba(0,0,0,0.4)', marginBottom: selected.acts?.link ? 14 : 0 }}>
+            <div style={{ fontSize: 12, color: NAVY_TEXT, marginBottom: selected.acts?.link ? 14 : 0 }}>
               {new Date(selected.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               {' — '}
               {new Date(selected.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -527,14 +531,11 @@ export default function MapPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    display: 'inline-block',
-                    fontSize: 11,
+                    display: 'inline-block', fontSize: 11,
                     color: '#ff8c00',
                     border: '1px solid rgba(255,140,0,0.3)',
-                    borderRadius: 20,
-                    padding: '5px 14px',
-                    textDecoration: 'none',
-                    letterSpacing: '0.05em',
+                    borderRadius: 20, padding: '5px 14px',
+                    textDecoration: 'none', letterSpacing: '0.05em',
                   }}
                 >
                   see more →
@@ -546,15 +547,12 @@ export default function MapPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    display: 'inline-block',
-                    fontSize: 11,
+                    display: 'inline-block', fontSize: 11,
                     color: '#ff8c00',
-                    background: 'rgba(255,140,0,0.08)',
-                    border: '1px solid rgba(255,140,0,0.3)',
-                    borderRadius: 20,
-                    padding: '5px 14px',
-                    textDecoration: 'none',
-                    letterSpacing: '0.05em',
+                    background: 'rgba(255,140,0,0.07)',
+                    border: '1px solid rgba(255,140,0,0.25)',
+                    borderRadius: 20, padding: '5px 14px',
+                    textDecoration: 'none', letterSpacing: '0.05em',
                   }}
                 >
                   directions →
@@ -564,47 +562,44 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Sponsor popup */}
+        {/* ── Sponsor popup — floats above filter bar ── */}
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 32,
+            bottom: 80,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
-            background: 'rgba(255,255,255,0.96)',
-            backdropFilter: 'blur(16px)',
-            border: '1px solid rgba(255,140,0,0.2)',
-            borderRadius: 12,
+            background: 'rgba(233,232,228,0.97)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            border: '1px solid rgba(255,140,0,0.18)',
+            borderRadius: 14,
             padding: '20px 24px',
-            minWidth: 280,
-            maxWidth: 360,
-            boxShadow: '0 4px 24px rgba(255,140,0,0.12)',
+            minWidth: 290,
+            maxWidth: 370,
+            boxShadow: '0 6px 28px rgba(255,140,0,0.10)',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{
-                fontSize: 10,
-                padding: '3px 10px',
-                borderRadius: 20,
-                background: 'rgba(255,140,0,0.1)',
-                color: '#ff8c00',
-                letterSpacing: '0.08em',
-                fontWeight: 600,
+                fontSize: 10, padding: '3px 10px', borderRadius: 20,
+                background: 'rgba(255,140,0,0.1)', color: '#ff8c00',
+                letterSpacing: '0.08em', fontWeight: 600,
               }}>
                 ★ pulsed sponsor
               </span>
               <button
                 onClick={() => setSelectedSponsor(null)}
-                style={{ background: 'none', border: 'none', color: 'rgba(0,0,0,0.22)', cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
+                style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ fontSize: 18, color: 'rgba(0,0,0,0.85)', marginBottom: 4 }}>
+            <div style={{ fontSize: 18, fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#1b2424', marginBottom: 4 }}>
               {selectedSponsor.name}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(0,0,0,0.3)', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, fontFamily: "'Montserrat', sans-serif", color: NAVY_TEXT, marginBottom: 14 }}>
               {selectedSponsor.address}
             </div>
 
@@ -614,15 +609,12 @@ export default function MapPage() {
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{
-                  display: 'inline-block',
-                  fontSize: 11,
+                  display: 'inline-block', fontSize: 11,
                   color: '#ff8c00',
-                  background: 'rgba(255,140,0,0.08)',
-                  border: '1px solid rgba(255,140,0,0.3)',
-                  borderRadius: 20,
-                  padding: '5px 14px',
-                  textDecoration: 'none',
-                  letterSpacing: '0.05em',
+                  background: 'rgba(255,140,0,0.07)',
+                  border: '1px solid rgba(255,140,0,0.25)',
+                  borderRadius: 20, padding: '5px 14px',
+                  textDecoration: 'none', letterSpacing: '0.05em',
                 }}
               >
                 directions →
@@ -633,14 +625,11 @@ export default function MapPage() {
                   target="_blank"
                   rel="noopener noreferrer"
                   style={{
-                    display: 'inline-block',
-                    fontSize: 11,
-                    color: 'rgba(0,0,0,0.4)',
-                    border: '1px solid rgba(0,0,0,0.1)',
-                    borderRadius: 20,
-                    padding: '5px 14px',
-                    textDecoration: 'none',
-                    letterSpacing: '0.05em',
+                    display: 'inline-block', fontSize: 11,
+                    color: NAVY_TEXT,
+                    border: `1px solid ${IVORY_BORDER}`,
+                    borderRadius: 20, padding: '5px 14px',
+                    textDecoration: 'none', letterSpacing: '0.05em',
                   }}
                 >
                   website →
@@ -650,47 +639,125 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* Legend */}
+        {/* ── Filter bar — pinned to bottom ── */}
         <div style={{
           position: 'absolute',
-          bottom: selected || selectedSponsor ? 280 : 32,
-          right: 20,
-          transition: 'bottom 0.2s ease',
+          bottom: 0, left: 0, right: 0,
           zIndex: 1000,
-          background: 'rgba(255,255,255,0.88)',
-          backdropFilter: 'blur(12px)',
-          padding: '12px 14px',
-          borderRadius: 8,
-          border: '1px solid rgba(0,0,0,0.07)',
-          boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
-          fontSize: 10,
-          color: 'rgba(0,0,0,0.35)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 6,
+          background: 'rgba(233,232,228,0.96)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderTop: `1px solid ${IVORY_BORDER}`,
+          padding: '10px 16px 14px',
+          // fade hint at right edge
+          WebkitMaskImage: 'linear-gradient(to right, black 88%, transparent 100%)',
+          maskImage: 'linear-gradient(to right, black 88%, transparent 100%)',
         }}>
-          {/* Live — gradient pill to show "color = time slot" */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{
-              width: 24,
-              height: 7,
-              borderRadius: 4,
-              background: 'linear-gradient(to right, #FF2D55, #FFD60A, #30D158, #0A84FF, #BF5AF2)',
-              display: 'inline-block',
-              flexShrink: 0,
-            }} />
-            live · by time
+          <div className="filter-scroll" style={{
+            display: 'flex',
+            gap: 6,
+            overflowX: 'auto',
+            paddingRight: 32,
+          }}>
+            {/* Live now toggle */}
+            <button
+              onClick={() => setFilterLive(f => !f)}
+              style={{
+                ...pillBase,
+                background: filterLive ? '#ff8c00' : 'rgba(255,255,255,0.7)',
+                border: filterLive ? '1px solid #ff8c00' : `1px solid ${IVORY_BORDER}`,
+                color: filterLive ? '#fff' : NAVY_TEXT,
+              }}
+            >
+              ● live now
+            </button>
+
+            {/* Genre pills */}
+            {genres.map(genre => (
+              <button
+                key={genre}
+                onClick={() => setFilterGenre(g => g === genre ? null : genre)}
+                style={{
+                  ...pillBase,
+                  background: filterGenre === genre ? 'rgba(255,140,0,0.1)' : 'rgba(255,255,255,0.7)',
+                  border: filterGenre === genre ? '1px solid rgba(255,140,0,0.5)' : `1px solid ${IVORY_BORDER}`,
+                  color: filterGenre === genre ? '#ff8c00' : NAVY_TEXT,
+                }}
+              >
+                {genre}
+              </button>
+            ))}
           </div>
-          {[
-            { color: '#888', label: 'scheduled' },
-            { color: '#e03c3c', label: 'cancelled' },
-          ].map(({ color, label }) => (
-            <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: color, display: 'inline-block', flexShrink: 0 }} />
-              {label}
-            </div>
-          ))}
         </div>
+
+        {/* ── Botanical overlay — bottom-left corner ── */}
+        <svg
+          viewBox="0 0 180 180"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            position: 'fixed', bottom: 0, left: 0,
+            width: 180, height: 180,
+            pointerEvents: 'none', zIndex: 998, opacity: 0.22,
+          }}
+        >
+          <g stroke="#426368" fill="none" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+            {/* Main stem */}
+            <path d="M 15 178 C 30 155 50 125 65 85" />
+            {/* Left fronds */}
+            <path d="M 24 163 C 8 153 2 138 5 120" />
+            <path d="M 36 145 C 18 133 12 116 16 97" />
+            <path d="M 48 126 C 30 114 25 96 30 78" />
+            <path d="M 58 107 C 44 95 40 78 45 61" />
+            {/* Right fronds */}
+            <path d="M 30 156 C 46 148 52 133 47 116" />
+            <path d="M 42 138 C 58 128 63 113 57 96" />
+            <path d="M 54 118 C 68 108 72 92 65 76" />
+            <path d="M 63 98 C 76 88 78 73 71 57" />
+            {/* Small leaf tips — left side */}
+            <path d="M 5 120 C 0 110 -2 100 3 93" />
+            <path d="M 16 97 C 10 87 9 76 15 70" />
+            <path d="M 30 78 C 24 68 23 58 30 52" />
+            {/* Small leaf tips — right side */}
+            <path d="M 47 116 C 52 106 55 95 50 88" />
+            <path d="M 57 96 C 62 86 64 75 59 68" />
+            <path d="M 65 76 C 70 66 72 55 67 48" />
+          </g>
+        </svg>
+
+        {/* ── Botanical overlay — bottom-right corner ── */}
+        <svg
+          viewBox="0 0 180 180"
+          xmlns="http://www.w3.org/2000/svg"
+          style={{
+            position: 'fixed', bottom: 0, right: 0,
+            width: 180, height: 180,
+            pointerEvents: 'none', zIndex: 998, opacity: 0.22,
+            transform: 'scaleX(-1)',
+          }}
+        >
+          <g stroke="#619882" fill="none" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
+            {/* Main stem */}
+            <path d="M 15 178 C 30 155 50 125 65 85" />
+            {/* Left fronds */}
+            <path d="M 24 163 C 8 153 2 138 5 120" />
+            <path d="M 36 145 C 18 133 12 116 16 97" />
+            <path d="M 48 126 C 30 114 25 96 30 78" />
+            <path d="M 58 107 C 44 95 40 78 45 61" />
+            {/* Right fronds */}
+            <path d="M 30 156 C 46 148 52 133 47 116" />
+            <path d="M 42 138 C 58 128 63 113 57 96" />
+            <path d="M 54 118 C 68 108 72 92 65 76" />
+            <path d="M 63 98 C 76 88 78 73 71 57" />
+            {/* Small leaf tips — left side */}
+            <path d="M 5 120 C 0 110 -2 100 3 93" />
+            <path d="M 16 97 C 10 87 9 76 15 70" />
+            <path d="M 30 78 C 24 68 23 58 30 52" />
+            {/* Small leaf tips — right side */}
+            <path d="M 47 116 C 52 106 55 95 50 88" />
+            <path d="M 57 96 C 62 86 64 75 59 68" />
+            <path d="M 65 76 C 70 66 72 55 67 48" />
+          </g>
+        </svg>
 
       </div>
     </>
