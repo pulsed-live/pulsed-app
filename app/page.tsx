@@ -384,22 +384,29 @@ export default function MapPage() {
         <div style={{
           position: 'absolute', top: 14, left: 14, zIndex: 1000,
           ...panelBase,
-          display: 'flex', alignItems: 'center', gap: 10,
-          padding: '10px 16px',
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '12px 16px',
         }}>
-          <span style={{
-            width: 8, height: 8, borderRadius: '50%',
-            background: '#ff8c00', display: 'inline-block',
-            boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
-          }} />
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {/* PULSED brand */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: '#ff8c00', display: 'inline-block',
+              boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
+            }} />
             <span style={{ color: '#ff8c00', fontSize: 14, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
               PULSED
             </span>
-            <span style={{ color: '#426368', fontSize: 9, letterSpacing: '0.12em', fontWeight: 600, lineHeight: 1, opacity: 0.75, textTransform: 'uppercase' }}>
-              × va-hi porchfest '26
-            </span>
           </div>
+          {/* Divider */}
+          <span style={{ width: 1, height: 28, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
+          {/* Porchfest logo */}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/pf26-logo-navy.png"
+            alt="Virginia Highland Porchfest 2026"
+            style={{ height: 34, width: 'auto', opacity: 0.85, display: 'block' }}
+          />
         </div>
 
         {/* ── Legend — top left, below header ── */}
