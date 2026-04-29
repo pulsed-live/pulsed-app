@@ -58,7 +58,7 @@ function effectiveStatus(set: SetRow): SetRow['status'] {
 // VHDA design tokens
 const IVORY = 'rgba(233,232,228,0.94)'
 const IVORY_BORDER = 'rgba(66,99,104,0.14)'
-const IVORY_SHADOW = '0 2px 12px rgba(66,99,104,0.10)'
+const IVORY_SHADOW = '0 2px 16px rgba(66,99,104,0.22), 0 1px 4px rgba(66,99,104,0.12)'
 const NAVY_TEXT = 'rgba(66,99,104,0.55)'
 
 export default function MapPage() {
