@@ -401,13 +401,13 @@ export default function MapPage() {
 
         {/* ── Legend — top left, below header ── */}
         <div style={{
-          position: 'absolute', top: 72, left: 14, zIndex: 1000,
+          position: 'absolute', top: 76, left: 14, zIndex: 1000,
           ...panelBase,
           borderRadius: 8,
           display: 'flex', alignItems: 'center', gap: 10,
-          padding: '6px 12px',
-          fontSize: 9, color: NAVY_TEXT,
-          letterSpacing: '0.06em',
+          padding: '8px 14px',
+          fontSize: 10, color: NAVY_TEXT,
+          letterSpacing: '0.05em',
         }}>
           {/* Live — VHDA-palette gradient bar */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
