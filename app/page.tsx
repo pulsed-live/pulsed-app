@@ -696,9 +696,9 @@ export default function MapPage() {
           viewBox="0 0 180 180"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            position: 'fixed', bottom: 0, left: 0,
+            position: 'fixed', bottom: 56, left: 0,
             width: 180, height: 180,
-            pointerEvents: 'none', zIndex: 998, opacity: 0.22,
+            pointerEvents: 'none', zIndex: 998, opacity: 0.32,
           }}
         >
           <g stroke="#426368" fill="none" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
@@ -730,9 +730,9 @@ export default function MapPage() {
           viewBox="0 0 180 180"
           xmlns="http://www.w3.org/2000/svg"
           style={{
-            position: 'fixed', bottom: 0, right: 0,
+            position: 'fixed', bottom: 56, right: 0,
             width: 180, height: 180,
-            pointerEvents: 'none', zIndex: 998, opacity: 0.22,
+            pointerEvents: 'none', zIndex: 998, opacity: 0.32,
             transform: 'scaleX(-1)',
           }}
         >
