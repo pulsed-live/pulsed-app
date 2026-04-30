@@ -109,6 +109,11 @@ export default function MapPage() {
   const [filterLive, setFilterLive] = useState(false)
   const [filterGenre, setFilterGenre] = useState<string | null>(null)
   const [filterTime, setFilterTime] = useState<number | null>(null)
+  // Landing animation — mount-gated so SSR and client start from the same state.
+  // `mounted` gates the overlay to client-only; `animDone` checks sessionStorage
+  // so repeat visitors within a tab session skip it entirely.
+  const [mounted, setMounted] = useState(false)
+  const [animDone, setAnimDone] = useState(true) // assume done until mount confirms otherwise
 
   // Unique sorted genres from loaded sets
   const genres = Array.from(new Set(sets.map(s => s.acts?.genre).filter(Boolean) as string[])).sort()
@@ -144,6 +149,21 @@ export default function MapPage() {
     const stillVisible = filteredSets.some(s => s.id === selected.id)
     if (!stillVisible) setSelected(null)
   }, [filterLive, filterGenre, filterTime])
+
+  // On mount: always play the animation on every page load
+  useEffect(() => {
+    setMounted(true)
+    setAnimDone(false)
+  }, [])
+
+  // Dismiss landing animation — total duration ~2.9 s (longer dark pause + longer clash)
+  useEffect(() => {
+    if (!mounted || animDone) return
+    const t = setTimeout(() => {
+      setAnimDone(true)
+    }, 2900)
+    return () => clearTimeout(t)
+  }, [mounted, animDone])
 
   // Init map once
   useEffect(() => {
@@ -427,6 +447,48 @@ export default function MapPage() {
           0%, 100% { opacity: 1; transform: scale(1); }
           50%       { opacity: 0.55; transform: scale(1.45); }
         }
+        /* ── Landing animation ── */
+        @keyframes introSlideLeft {
+          from { transform: translateX(-110vw); opacity: 0; }
+          to   { transform: translateX(0);      opacity: 1; }
+        }
+        @keyframes introSlideRight {
+          from { transform: translateX(110vw); opacity: 0; }
+          to   { transform: translateX(0);     opacity: 1; }
+        }
+        @keyframes clashBoom {
+          0%   { transform: scale(1);    }
+          20%  { transform: scale(1.16); }
+          42%  { transform: scale(0.93); }
+          60%  { transform: scale(1.07); }
+          78%  { transform: scale(0.97); }
+          100% { transform: scale(1);    }
+        }
+        @keyframes clashFlash {
+          0%   { opacity: 0;    }
+          18%  { opacity: 0.78; }
+          100% { opacity: 0;    }
+        }
+        @keyframes introCardAppear {
+          from { opacity: 0; transform: scale(0.88); }
+          to   { opacity: 1; transform: scale(1);    }
+        }
+        @keyframes introFadeOut {
+          from { opacity: 1; }
+          to   { opacity: 0; }
+        }
+        /* Dark bg fades out while card flies up */
+        @keyframes overlayBgFade {
+          from { opacity: 1; }
+          to   { opacity: 0; }
+        }
+        /* Card shoots from centre up to header position.
+           Real header: top:14px, height:~70px → centre at 49px from top.
+           Anchor starts at 50vh. Delta = 50vh - 49px → translate(-50vh + 49px). */
+        @keyframes cardFlyUp {
+          from { transform: translateY(0);                  }
+          to   { transform: translateY(calc(-50vh + 49px)); }
+        }
         /* Raise Leaflet attribution above 2-row filter bar */
         .leaflet-bottom.leaflet-right { bottom: 100px !important; right: 0 !important; }
         /* Style attribution to match VHDA brand */
@@ -449,6 +511,135 @@ export default function MapPage() {
 
         {/* Map */}
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+
+        {/* ── Landing animation overlay — client-only (mount-gated to avoid SSR mismatch) ──
+            Phase 1 (0–0.6s):  PULSED slides from left, PF logo slides from right → clash
+            Phase 2 (0.7–1.0s): logos fade out, real header card materialises centre-screen
+            Phase 3 (1.0–1.8s): card flies up to its permanent position, dark bg fades out
+            At 1.85s React unmounts the overlay; the real fixed header card is already there.
+        ── */}
+        {mounted && !animDone && (
+          <div style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            pointerEvents: 'none',
+          }}>
+            {/* Dark background — fades out while card flies up */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: '#0a0a0f',
+              animation: 'overlayBgFade 0.8s ease-in 2.0s both',
+            }} />
+
+            {/* VHDA stripe burst at moment of clash — longer, more dramatic */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+              opacity: 0,
+              animation: 'clashFlash 0.85s ease-out 1.02s both',
+            }} />
+
+            {/* ── Phase 1: individual logos — longer dark pause before entry ── */}
+            {/* logos start at 0.5s (was 0.06s), land at 1.02s */}
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: 18, padding: '0 28px',
+              animation: 'introFadeOut 0.22s ease-in 1.7s both',
+            }}>
+              {/* PULSED wordmark */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 10,
+                animation: [
+                  'introSlideLeft 0.52s cubic-bezier(0.22,1,0.36,1) 0.5s both',
+                  'clashBoom 0.6s cubic-bezier(0.22,1,0.36,1) 1.02s both',
+                ].join(', '),
+              }}>
+                <span style={{
+                  width: 14, height: 14, borderRadius: '50%',
+                  background: '#ff8c00', display: 'inline-block', flexShrink: 0,
+                  boxShadow: '0 0 22px #ff8c00, 0 0 44px #ff8c0066',
+                }} />
+                <span style={{
+                  color: '#ff8c00', fontSize: 30,
+                  letterSpacing: '0.18em', fontWeight: 700,
+                  fontFamily: "'JetBrains Mono', monospace",
+                  textShadow: '0 0 30px #ff8c0077',
+                }}>
+                  PULSED
+                </span>
+              </div>
+              {/* × separator */}
+              <span style={{
+                color: 'rgba(255,255,255,0.22)', fontSize: 22, fontWeight: 200,
+                animation: 'introCardAppear 0.2s ease-out 1.04s both',
+                flexShrink: 0,
+              }}>×</span>
+              {/* PF logo */}
+              <div style={{
+                animation: [
+                  'introSlideRight 0.52s cubic-bezier(0.22,1,0.36,1) 0.5s both',
+                  'clashBoom 0.6s cubic-bezier(0.22,1,0.36,1) 1.02s both',
+                ].join(', '),
+              }}>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/pf26-logo-navy.png" alt="Virginia Highland Porchfest 2026"
+                  style={{ height: 52, width: 'auto', display: 'block',
+                    filter: 'brightness(0) invert(1)', opacity: 0.92 }} />
+              </div>
+            </div>
+
+            {/* ── Phase 2+3: header card forms at centre then flies to top ── */}
+            {/* card appears at 1.62s, flies up starting at 2.0s */}
+            <div style={{
+              position: 'absolute',
+              left: '50%', top: '50%',
+              transform: 'translate(-50%, -50%)',
+            }}>
+              {/* Inner: the fly-up animation moves this element upward */}
+              <div style={{
+                animation: 'cardFlyUp 0.75s cubic-bezier(0.22,1,0.36,1) 2.0s both',
+              }}>
+                {/* The card — identical to the real fixed header card */}
+                <div style={{
+                  borderRadius: 13, padding: 3,
+                  background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+                  boxShadow: IVORY_SHADOW,
+                  maxWidth: 'calc(100vw - 28px)',
+                  boxSizing: 'border-box' as const,
+                  animation: 'introCardAppear 0.3s cubic-bezier(0.22,1,0.36,1) 1.62s both',
+                  opacity: 0,
+                }}>
+                  <div style={{
+                    background: IVORY,
+                    borderRadius: 10,
+                    display: 'flex', alignItems: 'center', gap: 12,
+                    padding: '12px 18px',
+                    overflow: 'hidden',
+                  }}>
+                    {/* ● PULSED */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                      <span style={{
+                        width: 9, height: 9, borderRadius: '50%',
+                        background: '#ff8c00', display: 'inline-block', flexShrink: 0,
+                        boxShadow: '0 0 10px #ff8c00cc',
+                      }} />
+                      <span style={{ color: '#ff8c00', fontSize: 15, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
+                        PULSED
+                      </span>
+                    </div>
+                    {/* divider */}
+                    <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
+                    {/* PF logo */}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src="/pf26-logo-navy.png" alt="Virginia Highland Porchfest 2026"
+                      style={{ height: 40, width: 'auto', opacity: 0.9, display: 'block', flexShrink: 0 }} />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        )}
 
         {/* ── Safe-area top cap — covers Dynamic Island zone with dark bg ── */}
         {/* height is 0 on desktop (env() returns 0 without viewport-fit=cover) */}
@@ -504,12 +695,9 @@ export default function MapPage() {
             </a>
             {/* Divider */}
             <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
-            {/* Porchfest logo — links to VHDA site.
-                Logo is 3146×944 px → at height:40 it renders 133px wide.
-                flexShrink:0 keeps it at natural size (don't distort the logo).
-                The outer maxWidth guard on the wrapper prevents full-card overflow. */}
+            {/* Porchfest logo — links to VHDA site */}
             <a
-              href="https://vhda.org"
+              href="https://www.virginiahighlanddistrict.com/porchfest"
               target="_blank"
               rel="noopener noreferrer"
               style={{ display: 'block', lineHeight: 0, flexShrink: 0 }}
@@ -960,6 +1148,28 @@ export default function MapPage() {
               }} />
             </div>
           </div>
+
+          {/* ── Instagram — centered in the blank space below the filter rows ── */}
+          <a
+            href="https://instagram.com/pulsed.live"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+              textDecoration: 'none',
+              color: 'rgba(0,0,0,0.38)',
+              fontSize: 10,
+              letterSpacing: '0.08em',
+              paddingTop: 4,
+            }}
+          >
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/>
+              <circle cx="12" cy="12" r="4"/>
+              <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor" stroke="none"/>
+            </svg>
+            @pulsed.live
+          </a>
 
         </div>
 
