@@ -971,6 +971,7 @@ export default function MapPage() {
           bottom: 0, left: 0, right: 0,
           zIndex: 1000,
           background: 'linear-gradient(to right, #ff8c00 0%, #ffd060 100%)',
+          fontFamily: "'Montserrat', sans-serif",
           paddingTop: 14,
           paddingLeft: 14,
           paddingRight: 14,
