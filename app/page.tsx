@@ -22,6 +22,12 @@ const SLOT_COLORS: Record<number, string> = {
   23: '#1b2424', // 7 PM EDT  — near-black
 }
 
+// Human-readable EDT labels for each UTC hour slot
+const SLOT_LABELS: Record<number, string> = {
+  14: '10 AM', 15: '11 AM', 16: '12 PM', 17: '1 PM',
+  18: '2 PM', 19: '3 PM', 20: '4 PM', 21: '5 PM', 23: '7 PM',
+}
+
 function slotColor(set: SetRow): string {
   const utcHour = new Date(set.starts_at).getUTCHours()
   return SLOT_COLORS[utcHour] ?? '#ff8c00'
@@ -74,6 +80,7 @@ export default function MapPage() {
   const [loaded, setLoaded] = useState(false)
   const [filterLive, setFilterLive] = useState(false)
   const [filterGenre, setFilterGenre] = useState<string | null>(null)
+  const [filterTime, setFilterTime] = useState<number | null>(null)
 
   // Unique sorted genres from loaded sets
   const genres = Array.from(new Set(sets.map(s => s.acts?.genre).filter(Boolean) as string[])).sort()
@@ -82,6 +89,7 @@ export default function MapPage() {
   const filteredSets = sets.filter(set => {
     if (filterLive && !isNowPlaying(set)) return false
     if (filterGenre && set.acts?.genre !== filterGenre) return false
+    if (filterTime !== null && new Date(set.starts_at).getUTCHours() !== filterTime) return false
     return true
   })
 
@@ -107,7 +115,7 @@ export default function MapPage() {
     if (!selected) return
     const stillVisible = filteredSets.some(s => s.id === selected.id)
     if (!stillVisible) setSelected(null)
-  }, [filterLive, filterGenre])
+  }, [filterLive, filterGenre, filterTime])
 
   // Init map once
   useEffect(() => {
@@ -223,7 +231,7 @@ export default function MapPage() {
         .map(s => [s.venues!.lat!, s.venues!.lng!] as [number, number])
       if (coords.length === 0) return
       const bounds = L.latLngBounds(coords)
-      leafletMap.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 })
+      leafletMap.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 17 })
       hasFitRef.current = true
     })
   }, [sets, loaded])
@@ -385,8 +393,12 @@ export default function MapPage() {
           0%, 100% { box-shadow: 0 0 0 0 rgba(255,140,0,0.55); }
           50%       { box-shadow: 0 0 0 5px rgba(255,140,0,0);  }
         }
-        /* Raise zoom controls above filter bar */
-        .leaflet-bottom.leaflet-right { bottom: 68px !important; right: 12px !important; }
+        @keyframes pulseDot {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50%       { opacity: 0.55; transform: scale(1.45); }
+        }
+        /* Raise zoom controls above 3-row filter bar (~140px) */
+        .leaflet-bottom.leaflet-right { bottom: 152px !important; right: 12px !important; }
         /* Style attribution to match VHDA brand */
         .leaflet-control-attribution {
           font-family: 'JetBrains Mono', monospace !important;
@@ -475,7 +487,7 @@ export default function MapPage() {
           padding: '10px 14px',
           fontSize: 11, color: NAVY_TEXT,
         }}>
-          {(filterLive || filterGenre)
+          {(filterLive || filterGenre || filterTime !== null)
             ? `${filteredSets.length} of ${sets.length}`
             : livePinCount > 0
               ? <span style={{ color: '#ff8c00' }}>{livePinCount} live now</span>
@@ -503,7 +515,7 @@ export default function MapPage() {
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 80,
+            bottom: 154,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -627,7 +639,7 @@ export default function MapPage() {
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 80,
+            bottom: 154,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -700,64 +712,159 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* ── Filter bar — pinned to bottom ── */}
+        {/* ── Filter bar — 3 stacked rows, pinned to bottom ── */}
         <div style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
           zIndex: 1000,
           background: 'linear-gradient(to right, #ff8c00 0%, #ffd060 100%)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid rgba(255,140,0,0.35)',
-          padding: '10px 16px 14px',
+          padding: '10px 14px 14px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 6,
           overflow: 'hidden',
         }}>
-          {/* Right-edge scroll-hint overlay — sits above pills, doesn't clip the bar background */}
-          <div style={{
-            position: 'absolute',
-            top: 0, right: 0, bottom: 0, width: 48,
-            background: 'linear-gradient(to right, transparent, #ffd060)',
-            pointerEvents: 'none',
-            zIndex: 1,
-          }} />
-          <div className="filter-scroll" style={{
-            display: 'flex',
-            gap: 6,
-            overflowX: 'auto',
-            paddingRight: 32,
-            position: 'relative',
-          }}>
-            {/* Live now toggle */}
-            <button
-              onClick={() => setFilterLive(f => !f)}
-              style={{
-                ...pillBase,
-                background: filterLive ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.82)',
-                border: filterLive ? '1px solid rgba(0,0,0,0.18)' : '1px solid rgba(255,255,255,0.5)',
-                color: filterLive ? '#fff' : '#1b2424',
-                fontWeight: filterLive ? 600 : 400,
-              }}
-            >
-              ● live now
-            </button>
 
-            {/* Genre pills */}
-            {genres.map(genre => (
-              <button
-                key={genre}
-                onClick={() => setFilterGenre(g => g === genre ? null : genre)}
-                style={{
-                  ...pillBase,
-                  background: filterGenre === genre ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.82)',
-                  border: filterGenre === genre ? '1px solid rgba(0,0,0,0.18)' : '1px solid rgba(255,255,255,0.5)',
-                  color: filterGenre === genre ? '#fff' : '#1b2424',
-                  fontWeight: filterGenre === genre ? 600 : 400,
-                }}
-              >
-                {genre}
-              </button>
-            ))}
+          {/* ── Row 1: Find a Pulse (live-now toggle) ── */}
+          <button
+            onClick={() => setFilterLive(f => !f)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 8,
+              width: '100%',
+              background: filterLive ? 'rgba(0,0,0,0.26)' : 'rgba(255,255,255,0.86)',
+              border: filterLive ? '1px solid rgba(0,0,0,0.20)' : '1px solid rgba(255,255,255,0.55)',
+              color: filterLive ? '#fff' : '#1b2424',
+              borderRadius: 22,
+              padding: '9px 16px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: 12,
+              fontWeight: filterLive ? 700 : 500,
+              letterSpacing: '0.06em',
+              transition: 'all 0.15s ease',
+              minHeight: 38,
+            }}
+          >
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: filterLive ? '#fff' : '#ff8c00',
+              display: 'inline-block', flexShrink: 0,
+              animation: 'pulseDot 1.6s ease-in-out infinite',
+            }} />
+            find a pulse · live now
+          </button>
+
+          {/* ── Row 2: Genre ── */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0, minHeight: 34 }}>
+            <span style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'rgba(0,0,0,0.32)',
+              flexShrink: 0, width: 48, paddingLeft: 2,
+            }}>Genre</span>
+            <div style={{ width: 1, height: 18, background: 'rgba(0,0,0,0.14)', flexShrink: 0, marginRight: 8 }} />
+            {/* scroll area */}
+            <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+              <div className="filter-scroll" style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingRight: 28 }}>
+                {genres.map(genre => (
+                  <button
+                    key={genre}
+                    onClick={() => setFilterGenre(g => g === genre ? null : genre)}
+                    style={{
+                      flexShrink: 0,
+                      fontSize: 11,
+                      padding: '6px 13px',
+                      borderRadius: 18,
+                      cursor: 'pointer',
+                      fontFamily: 'inherit',
+                      letterSpacing: '0.04em',
+                      whiteSpace: 'nowrap',
+                      transition: 'all 0.15s ease',
+                      minHeight: 34,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      background: filterGenre === genre ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.82)',
+                      border: filterGenre === genre ? '1px solid rgba(0,0,0,0.18)' : '1px solid rgba(255,255,255,0.5)',
+                      color: filterGenre === genre ? '#fff' : '#1b2424',
+                      fontWeight: filterGenre === genre ? 600 : 400,
+                    }}
+                  >
+                    {genre}
+                  </button>
+                ))}
+              </div>
+              {/* right-edge fade */}
+              <div style={{
+                position: 'absolute', top: 0, right: 0, bottom: 0, width: 36,
+                background: 'linear-gradient(to right, transparent, #ffd060)',
+                pointerEvents: 'none',
+              }} />
+            </div>
           </div>
+
+          {/* ── Row 3: Time ── */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 0, minHeight: 34 }}>
+            <span style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+              textTransform: 'uppercase',
+              color: 'rgba(0,0,0,0.32)',
+              flexShrink: 0, width: 48, paddingLeft: 2,
+            }}>Time</span>
+            <div style={{ width: 1, height: 18, background: 'rgba(0,0,0,0.14)', flexShrink: 0, marginRight: 8 }} />
+            {/* scroll area */}
+            <div style={{ position: 'relative', flex: 1, overflow: 'hidden' }}>
+              <div className="filter-scroll" style={{ display: 'flex', gap: 5, overflowX: 'auto', paddingRight: 28 }}>
+                {(Object.entries(SLOT_LABELS) as [string, string][]).map(([utcHour, label]) => {
+                  const hour = Number(utcHour)
+                  const slotCol = SLOT_COLORS[hour]
+                  const isActive = filterTime === hour
+                  return (
+                    <button
+                      key={hour}
+                      onClick={() => setFilterTime(t => t === hour ? null : hour)}
+                      style={{
+                        flexShrink: 0,
+                        fontSize: 11,
+                        padding: '6px 13px',
+                        borderRadius: 18,
+                        cursor: 'pointer',
+                        fontFamily: 'inherit',
+                        letterSpacing: '0.04em',
+                        whiteSpace: 'nowrap',
+                        transition: 'all 0.15s ease',
+                        minHeight: 34,
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: 5,
+                        background: isActive ? slotCol : 'rgba(255,255,255,0.82)',
+                        border: isActive ? `1px solid ${slotCol}` : '1px solid rgba(255,255,255,0.5)',
+                        color: isActive ? '#fff' : '#1b2424',
+                        fontWeight: isActive ? 600 : 400,
+                      }}
+                    >
+                      <span style={{
+                        width: 6, height: 6, borderRadius: '50%',
+                        background: isActive ? 'rgba(255,255,255,0.75)' : slotCol,
+                        display: 'inline-block', flexShrink: 0,
+                      }} />
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+              {/* right-edge fade */}
+              <div style={{
+                position: 'absolute', top: 0, right: 0, bottom: 0, width: 36,
+                background: 'linear-gradient(to right, transparent, #ffd060)',
+                pointerEvents: 'none',
+              }} />
+            </div>
+          </div>
+
         </div>
 
         {/* ── Center-on-me button — above zoom controls ── */}
@@ -769,7 +876,7 @@ export default function MapPage() {
           title="Center on my location"
           style={{
             position: 'absolute',
-            bottom: 178, right: 14,
+            bottom: 222, right: 14,
             zIndex: 1001,
             width: 34, height: 34,
             borderRadius: '50%',
