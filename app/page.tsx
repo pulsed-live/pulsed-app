@@ -397,8 +397,8 @@ export default function MapPage() {
           0%, 100% { opacity: 1; transform: scale(1); }
           50%       { opacity: 0.55; transform: scale(1.45); }
         }
-        /* Raise zoom controls above 3-row filter bar (~140px) */
-        .leaflet-bottom.leaflet-right { bottom: 152px !important; right: 12px !important; }
+        /* Raise zoom controls above 2-row filter bar + floating pill (~104px) */
+        .leaflet-bottom.leaflet-right { bottom: 106px !important; right: 12px !important; }
         /* Style attribution to match VHDA brand */
         .leaflet-control-attribution {
           font-family: 'JetBrains Mono', monospace !important;
@@ -515,7 +515,7 @@ export default function MapPage() {
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 154,
+            bottom: 160,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -639,7 +639,7 @@ export default function MapPage() {
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 154,
+            bottom: 160,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -712,7 +712,51 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* ── Filter bar — 3 stacked rows, pinned to bottom ── */}
+        {/* ── "Find a Pulse" pill — floats above the gradient bar ── */}
+        <button
+          onClick={() => setFilterLive(f => !f)}
+          style={{
+            position: 'absolute',
+            bottom: 104,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1001,
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            background: filterLive
+              ? 'rgba(20,20,20,0.88)'
+              : 'rgba(255,255,255,0.95)',
+            border: filterLive
+              ? '1px solid rgba(255,255,255,0.18)'
+              : '1px solid rgba(255,140,0,0.25)',
+            color: filterLive ? '#fff' : '#1b2424',
+            borderRadius: 24,
+            padding: '10px 22px',
+            cursor: 'pointer',
+            fontFamily: 'inherit',
+            fontSize: 12,
+            fontWeight: filterLive ? 700 : 500,
+            letterSpacing: '0.06em',
+            whiteSpace: 'nowrap',
+            boxShadow: filterLive
+              ? '0 4px 18px rgba(0,0,0,0.35)'
+              : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            transition: 'all 0.18s ease',
+          }}
+        >
+          <span style={{
+            width: 7, height: 7, borderRadius: '50%',
+            background: filterLive ? '#ffd060' : '#ff8c00',
+            display: 'inline-block', flexShrink: 0,
+            animation: 'pulseDot 1.6s ease-in-out infinite',
+          }} />
+          find a pulse · live now
+        </button>
+
+        {/* ── Filter bar — Genre + Time rows, pinned to bottom ── */}
         <div style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
@@ -726,39 +770,7 @@ export default function MapPage() {
           overflow: 'hidden',
         }}>
 
-          {/* ── Row 1: Find a Pulse (live-now toggle) ── */}
-          <button
-            onClick={() => setFilterLive(f => !f)}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              width: '100%',
-              background: filterLive ? 'rgba(0,0,0,0.26)' : 'rgba(255,255,255,0.86)',
-              border: filterLive ? '1px solid rgba(0,0,0,0.20)' : '1px solid rgba(255,255,255,0.55)',
-              color: filterLive ? '#fff' : '#1b2424',
-              borderRadius: 22,
-              padding: '9px 16px',
-              cursor: 'pointer',
-              fontFamily: 'inherit',
-              fontSize: 12,
-              fontWeight: filterLive ? 700 : 500,
-              letterSpacing: '0.06em',
-              transition: 'all 0.15s ease',
-              minHeight: 38,
-            }}
-          >
-            <span style={{
-              width: 7, height: 7, borderRadius: '50%',
-              background: filterLive ? '#fff' : '#ff8c00',
-              display: 'inline-block', flexShrink: 0,
-              animation: 'pulseDot 1.6s ease-in-out infinite',
-            }} />
-            find a pulse · live now
-          </button>
-
-          {/* ── Row 2: Genre ── */}
+          {/* ── Row 1: Genre ── */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, minHeight: 34 }}>
             <span style={{
               fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
@@ -806,7 +818,7 @@ export default function MapPage() {
             </div>
           </div>
 
-          {/* ── Row 3: Time ── */}
+          {/* ── Row: Time ── */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 0, minHeight: 34 }}>
             <span style={{
               fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
@@ -876,7 +888,7 @@ export default function MapPage() {
           title="Center on my location"
           style={{
             position: 'absolute',
-            bottom: 222, right: 14,
+            bottom: 178, right: 14,
             zIndex: 1001,
             width: 34, height: 34,
             borderRadius: '50%',

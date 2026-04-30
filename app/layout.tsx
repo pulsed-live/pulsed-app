@@ -7,8 +7,12 @@ export const metadata: Metadata = {
 };
 
 // viewport-fit=cover exposes env(safe-area-inset-*) so UI panels
-// can dodge the Dynamic Island / notch on iPhone
+// can dodge the Dynamic Island / notch on iPhone.
+// width + initialScale must be explicit or Next.js may omit them, which
+// prevents env(safe-area-inset-top) from returning a non-zero value.
 export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   viewportFit: "cover",
 };
 
