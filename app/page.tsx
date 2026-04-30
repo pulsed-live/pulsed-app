@@ -466,20 +466,25 @@ export default function MapPage() {
 
         {/* ── Header — centered top ── */}
         {/* position:fixed so env(safe-area-inset-top) resolves reliably vs viewport on all iOS devices */}
+        {/* maxWidth prevents the card from overflowing narrow screens while keeping it centred */}
         <div style={{
           position: 'fixed',
           top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
-          left: '50%', transform: 'translateX(-50%)',
+          left: 0, right: 0, margin: '0 auto',
+          width: 'fit-content',
           zIndex: 1000,
           borderRadius: 13, padding: 3,
           background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
           boxShadow: IVORY_SHADOW,
+          maxWidth: 'calc(100vw - 28px)',
+          boxSizing: 'border-box',
         }}>
           <div style={{
             background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
             borderRadius: 10,
-            display: 'flex', alignItems: 'center', gap: 14,
-            padding: '14px 20px',
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 18px',
+            overflow: 'hidden',
           }}>
             {/* PULSED brand — links to pulsedapp.live */}
             <a
@@ -498,8 +503,11 @@ export default function MapPage() {
               </span>
             </a>
             {/* Divider */}
-            <span style={{ width: 1, height: 50, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
-            {/* Porchfest logo — links to VHDA site. flexShrink:0 + width:auto preserves native aspect ratio. */}
+            <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
+            {/* Porchfest logo — links to VHDA site.
+                Logo is 3146×944 px → at height:40 it renders 133px wide.
+                flexShrink:0 keeps it at natural size (don't distort the logo).
+                The outer maxWidth guard on the wrapper prevents full-card overflow. */}
             <a
               href="https://vhda.org"
               target="_blank"
@@ -510,7 +518,7 @@ export default function MapPage() {
               <img
                 src="/pf26-logo-navy.png"
                 alt="Virginia Highland Porchfest 2026"
-                style={{ height: 50, width: 'auto', opacity: 0.9, display: 'block' }}
+                style={{ height: 40, width: 'auto', opacity: 0.9, display: 'block' }}
               />
             </a>
           </div>
