@@ -877,12 +877,8 @@ export default function MapPage() {
           transform: 'translateX(-50%)',
           zIndex: 1001,
           width: 'calc(100vw - 28px)',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 6,
         }}>
-          {/* Stripe border — matches header card exactly: padding 3, radius 13 */}
+          {/* Stripe border — matches header card: padding 3, radius 13 */}
           <div style={{
             width: '100%',
             borderRadius: 13,
@@ -930,23 +926,27 @@ export default function MapPage() {
                 animation: 'pulseDot 1.6s ease-in-out infinite',
               }} />
               find a pulse
+              <span style={{
+                width: 1, height: 12,
+                background: filterLive ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                display: 'inline-block', flexShrink: 0,
+                borderRadius: 1,
+              }} />
+              <span style={{
+                fontSize: 10,
+                color: filterLive ? 'rgba(255,255,255,0.7)' : (livePinCount > 0 ? '#ff8c00' : 'rgba(0,0,0,0.4)'),
+                fontWeight: livePinCount > 0 && !filterLive ? 600 : 400,
+                letterSpacing: '0.05em',
+              }}>
+                {(filterLive || filterGenre || filterTime !== null)
+                  ? `${filteredSets.length} of ${sets.length} sets`
+                  : livePinCount > 0
+                    ? `${livePinCount} live · ${sets.length} sets`
+                    : `${sets.length} sets`
+                }
+              </span>
             </button>
           </div>
-          {/* Count below the button */}
-          <span style={{
-            fontSize: 10,
-            color: livePinCount > 0 ? '#ff8c00' : 'rgba(255,255,255,0.55)',
-            letterSpacing: '0.08em',
-            fontWeight: livePinCount > 0 ? 600 : 400,
-            whiteSpace: 'nowrap',
-          }}>
-            {(filterLive || filterGenre || filterTime !== null)
-              ? `${filteredSets.length} of ${sets.length} sets`
-              : livePinCount > 0
-                ? `${livePinCount} live · ${sets.length} sets`
-                : `${sets.length} sets`
-            }
-          </span>
         </div>
 
         {/* ── VHDA side ribbons — sit behind filter bar and header card ── */}
