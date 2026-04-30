@@ -278,7 +278,7 @@ export default function MapPage() {
                 width: 14px;
                 height: 14px;
                 border-radius: 50%;
-                background: ${isScheduled ? 'transparent' : color};
+                background: ${isScheduled ? 'rgba(136,136,136,0.20)' : color};
                 border: 2px solid ${color};
                 box-shadow: ${(isCancelled || isScheduled) ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
                 opacity: ${isCancelled ? '0.55' : '1'};
@@ -677,15 +677,22 @@ export default function MapPage() {
           WebkitBackdropFilter: 'blur(16px)',
           borderTop: '1px solid rgba(255,140,0,0.18)',
           padding: '10px 16px 14px',
-          // fade hint at right edge
-          WebkitMaskImage: 'linear-gradient(to right, black 88%, transparent 100%)',
-          maskImage: 'linear-gradient(to right, black 88%, transparent 100%)',
+          overflow: 'hidden',
         }}>
+          {/* Right-edge scroll-hint overlay — sits above pills, doesn't clip the bar background */}
+          <div style={{
+            position: 'absolute',
+            top: 0, right: 0, bottom: 0, width: 48,
+            background: 'linear-gradient(to right, transparent, rgba(233,232,228,0.96))',
+            pointerEvents: 'none',
+            zIndex: 1,
+          }} />
           <div className="filter-scroll" style={{
             display: 'flex',
             gap: 6,
             overflowX: 'auto',
             paddingRight: 32,
+            position: 'relative',
           }}>
             {/* Live now toggle */}
             <button
@@ -753,89 +760,7 @@ export default function MapPage() {
           </svg>
         </button>
 
-        {/* ── Botanical overlay — bottom-left corner ── */}
-        {/* Three layered filled leaves rising from the corner — navy, teal, olive */}
-        <svg
-          viewBox="0 0 220 260"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{
-            position: 'fixed', bottom: 56, left: 0,
-            width: 220, height: 260,
-            pointerEvents: 'none', zIndex: 998,
-          }}
-        >
-          {/* Leaf 1 — large, steep rise, VHDA navy */}
-          <path
-            d="M 8 260 C -5 215 5 160 28 110 C 45 70 62 35 85 15 C 105 35 100 78 85 118 C 68 162 38 210 8 260 Z"
-            fill="#426368" fillOpacity="0.16"
-            stroke="#426368" strokeWidth="1" strokeOpacity="0.28"
-            strokeLinecap="round"
-          />
-          <path d="M 8 260 C 22 205 50 155 85 15" fill="none" stroke="#426368" strokeWidth="0.7" strokeOpacity="0.30" strokeLinecap="round" />
-          <path d="M 28 210 C 8 195 0 175 4 155" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
-          <path d="M 50 170 C 28 154 20 133 25 112" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
-          {/* Leaf 2 — medium, diagonal rise, VHDA teal */}
-          <path
-            d="M 28 260 C 16 228 36 185 65 148 C 90 118 118 90 148 72 C 162 90 155 120 132 148 C 106 178 64 222 28 260 Z"
-            fill="#619882" fillOpacity="0.14"
-            stroke="#619882" strokeWidth="1" strokeOpacity="0.25"
-            strokeLinecap="round"
-          />
-          <path d="M 28 260 C 55 215 100 165 148 72" fill="none" stroke="#619882" strokeWidth="0.7" strokeOpacity="0.28" strokeLinecap="round" />
-          <path d="M 60 218 C 40 200 35 180 42 160" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.20" strokeLinecap="round" />
-          <path d="M 95 178 C 72 160 68 138 76 118" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.20" strokeLinecap="round" />
-          {/* Leaf 3 — wide, low-angle, VHDA olive */}
-          <path
-            d="M 5 260 C 0 242 28 215 68 190 C 108 166 150 148 188 136 C 196 152 185 170 150 185 C 110 202 55 232 5 260 Z"
-            fill="#787342" fillOpacity="0.12"
-            stroke="#787342" strokeWidth="1" strokeOpacity="0.22"
-            strokeLinecap="round"
-          />
-          <path d="M 5 260 C 40 232 110 190 188 136" fill="none" stroke="#787342" strokeWidth="0.7" strokeOpacity="0.25" strokeLinecap="round" />
-          <path d="M 55 240 C 38 224 34 206 42 190" fill="none" stroke="#787342" strokeWidth="0.6" strokeOpacity="0.18" strokeLinecap="round" />
-        </svg>
-
-        {/* ── Botanical overlay — bottom-right corner (mirrored, teal-first) ── */}
-        <svg
-          viewBox="0 0 220 260"
-          xmlns="http://www.w3.org/2000/svg"
-          style={{
-            position: 'fixed', bottom: 56, right: 0,
-            width: 220, height: 260,
-            pointerEvents: 'none', zIndex: 998,
-            transform: 'scaleX(-1)',
-          }}
-        >
-          {/* Leaf 1 — large, steep rise, VHDA teal */}
-          <path
-            d="M 8 260 C -5 215 5 160 28 110 C 45 70 62 35 85 15 C 105 35 100 78 85 118 C 68 162 38 210 8 260 Z"
-            fill="#619882" fillOpacity="0.16"
-            stroke="#619882" strokeWidth="1" strokeOpacity="0.28"
-            strokeLinecap="round"
-          />
-          <path d="M 8 260 C 22 205 50 155 85 15" fill="none" stroke="#619882" strokeWidth="0.7" strokeOpacity="0.30" strokeLinecap="round" />
-          <path d="M 28 210 C 8 195 0 175 4 155" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
-          <path d="M 50 170 C 28 154 20 133 25 112" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
-          {/* Leaf 2 — medium, diagonal rise, VHDA navy */}
-          <path
-            d="M 28 260 C 16 228 36 185 65 148 C 90 118 118 90 148 72 C 162 90 155 120 132 148 C 106 178 64 222 28 260 Z"
-            fill="#426368" fillOpacity="0.13"
-            stroke="#426368" strokeWidth="1" strokeOpacity="0.22"
-            strokeLinecap="round"
-          />
-          <path d="M 28 260 C 55 215 100 165 148 72" fill="none" stroke="#426368" strokeWidth="0.7" strokeOpacity="0.25" strokeLinecap="round" />
-          <path d="M 60 218 C 40 200 35 180 42 160" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.18" strokeLinecap="round" />
-          <path d="M 95 178 C 72 160 68 138 76 118" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.18" strokeLinecap="round" />
-          {/* Leaf 3 — wide, low-angle, VHDA gold */}
-          <path
-            d="M 5 260 C 0 242 28 215 68 190 C 108 166 150 148 188 136 C 196 152 185 170 150 185 C 110 202 55 232 5 260 Z"
-            fill="#C17C2E" fillOpacity="0.10"
-            stroke="#C17C2E" strokeWidth="1" strokeOpacity="0.20"
-            strokeLinecap="round"
-          />
-          <path d="M 5 260 C 40 232 110 190 188 136" fill="none" stroke="#C17C2E" strokeWidth="0.7" strokeOpacity="0.22" strokeLinecap="round" />
-          <path d="M 55 240 C 38 224 34 206 42 190" fill="none" stroke="#C17C2E" strokeWidth="0.6" strokeOpacity="0.16" strokeLinecap="round" />
-        </svg>
+        {/* ── Botanical overlays — removed pending new inspiration ── */}
 
       </div>
     </>
