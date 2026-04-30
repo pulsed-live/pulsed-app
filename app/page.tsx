@@ -887,7 +887,7 @@ export default function MapPage() {
             padding: 2,
             background: VHDA_STRIPE_H,
             backgroundSize: '270px 100%',
-            animation: filterLive ? 'ribbonScrollV 3s linear infinite' : 'none',
+            animation: filterLive ? 'ribbonScroll 3s linear infinite' : 'none',
             boxShadow: filterLive
               ? '0 4px 18px rgba(0,0,0,0.35)'
               : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
