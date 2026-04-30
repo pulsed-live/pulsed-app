@@ -120,7 +120,7 @@ export default function MapPage() {
 
   // Sets visible on map after filters applied
   const filteredSets = sets.filter(set => {
-    if (filterLive && !isNowPlaying(set)) return false
+    if (filterLive && effectiveStatus(set) !== 'live') return false
     if (filterGenre && set.acts?.genre !== filterGenre) return false
     if (filterTime !== null && new Date(set.starts_at).getUTCHours() !== filterTime) return false
     return true
@@ -869,17 +869,13 @@ export default function MapPage() {
           </div>
         )}
 
-        {/* ── "Find a Pulse" pill + live count ── */}
+        {/* ── "Find a Pulse" pill ── */}
         <div style={{
           position: 'absolute',
-          bottom: 'calc(146px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(128px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1001,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          gap: 6,
         }}>
           {/* Stripe border wrapper — animates only when filter is active */}
           <div style={{
@@ -923,23 +919,27 @@ export default function MapPage() {
                 animation: 'pulseDot 1.6s ease-in-out infinite',
               }} />
               find a pulse
+              <span style={{
+                width: 1, height: 12,
+                background: filterLive ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                display: 'inline-block', flexShrink: 0,
+                borderRadius: 1,
+              }} />
+              <span style={{
+                fontSize: 10,
+                color: filterLive ? 'rgba(255,255,255,0.7)' : (livePinCount > 0 ? '#ff8c00' : 'rgba(0,0,0,0.4)'),
+                fontWeight: livePinCount > 0 && !filterLive ? 600 : 400,
+                letterSpacing: '0.05em',
+              }}>
+                {(filterLive || filterGenre || filterTime !== null)
+                  ? `${filteredSets.length} of ${sets.length}`
+                  : livePinCount > 0
+                    ? `${livePinCount} live · ${sets.length} sets`
+                    : `${sets.length} sets`
+                }
+              </span>
             </button>
           </div>
-          {/* Live set count below the button */}
-          <span style={{
-            fontSize: 10,
-            color: livePinCount > 0 ? '#ff8c00' : NAVY_TEXT,
-            letterSpacing: '0.08em',
-            fontWeight: livePinCount > 0 ? 600 : 400,
-            whiteSpace: 'nowrap',
-          }}>
-            {(filterLive || filterGenre || filterTime !== null)
-              ? `${filteredSets.length} of ${sets.length} sets`
-              : livePinCount > 0
-                ? `${livePinCount} live · ${sets.length} sets`
-                : `${sets.length} sets`
-            }
-          </span>
         </div>
 
         {/* ── VHDA side ribbons — sit behind filter bar and header card ── */}
