@@ -38,8 +38,13 @@ body {
 }
 .sponsor-pin { animation: sponsorPulse 2s ease-out infinite; }
 
-/* ── VHDA ribbon scroll — only used on the active pulse button ── */
+/* ── VHDA ribbon scroll — horizontal (pulse button) ── */
 @keyframes ribbonScroll {
   from { background-position: 0 0; }
   to   { background-position: 270px 0; }
+}
+/* ── VHDA ribbon scroll — vertical (side ribbons) ── */
+@keyframes ribbonScrollV {
+  from { background-position: 0 0; }
+  to   { background-position: 0 270px; }
 }

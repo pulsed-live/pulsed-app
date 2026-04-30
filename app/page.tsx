@@ -887,7 +887,7 @@ export default function MapPage() {
             padding: 2,
             background: VHDA_STRIPE_H,
             backgroundSize: '270px 100%',
-            animation: filterLive ? 'ribbonScroll 3s linear infinite' : 'none',
+            animation: filterLive ? 'ribbonScrollV 3s linear infinite' : 'none',
             boxShadow: filterLive
               ? '0 4px 18px rgba(0,0,0,0.35)'
               : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
@@ -948,12 +948,14 @@ export default function MapPage() {
           width: 6,
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
           zIndex: 500, pointerEvents: 'none',
+          animation: filterLive ? 'ribbonScrollV 3s linear infinite' : 'none',
         }} />
         <div style={{
           position: 'fixed', top: 0, bottom: 0, right: 0,
           width: 6,
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
           zIndex: 500, pointerEvents: 'none',
+          animation: filterLive ? 'ribbonScrollV 3s linear infinite' : 'none',
         }} />
 
         {/* ── Filter bar — Genre + Time rows, pinned to bottom ── */}
