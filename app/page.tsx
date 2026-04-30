@@ -837,17 +837,6 @@ export default function MapPage() {
           zIndex: 1001, pointerEvents: 'none',
         }} />
 
-        {/* ── Transparent-to-orange gradient halo — bottom aligned to filter bar top, 40px fade ── */}
-        <div style={{
-          position: 'absolute',
-          bottom: 'calc(102px + env(safe-area-inset-bottom, 0px))',
-          left: 0, right: 0,
-          height: 40,
-          background: 'linear-gradient(to bottom, transparent 0%, rgba(255,140,0,0.88) 100%)',
-          zIndex: 999,
-          pointerEvents: 'none',
-        }} />
-
         {/* ── Filter bar — Genre + Time rows, pinned to bottom ── */}
         <div style={{
           position: 'absolute',
