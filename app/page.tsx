@@ -451,8 +451,9 @@ export default function MapPage() {
         }} />
 
         {/* ── Header — centered top ── */}
+        {/* position:fixed so env(safe-area-inset-top) resolves reliably vs viewport on all iOS devices */}
         <div style={{
-          position: 'absolute',
+          position: 'fixed',
           top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
           left: '50%', transform: 'translateX(-50%)',
           zIndex: 1000,
@@ -521,21 +522,24 @@ export default function MapPage() {
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 160,
+            bottom: 'calc(160px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
+            borderRadius: 16, padding: 2,
+            background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+            boxShadow: '0 6px 28px rgba(66,99,104,0.14)',
+            animation: 'popupSlideUp 0.22s cubic-bezier(0.22,1,0.36,1) both',
+          }}>
+          <div style={{
             background: 'rgba(233,232,228,0.97)',
             backdropFilter: 'blur(18px)',
             WebkitBackdropFilter: 'blur(18px)',
-            border: `1px solid ${IVORY_BORDER}`,
             borderRadius: 14,
             padding: '20px 24px',
             minWidth: 290,
             maxWidth: 370,
-            boxShadow: '0 6px 28px rgba(66,99,104,0.14)',
             fontFamily: "'JetBrains Mono', monospace",
-            animation: 'popupSlideUp 0.22s cubic-bezier(0.22,1,0.36,1) both',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               {effectiveStatus(selected) === 'live' ? (
@@ -639,25 +643,30 @@ export default function MapPage() {
               )}
             </div>
           </div>
+          </div>
         )}
 
         {/* ── Sponsor popup — floats above filter bar ── */}
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 160,
+            bottom: 'calc(160px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
+            borderRadius: 16, padding: 2,
+            background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+            boxShadow: '0 6px 28px rgba(66,99,104,0.14)',
+          }}>
+          <div style={{
             background: 'rgba(233,232,228,0.97)',
             backdropFilter: 'blur(18px)',
             WebkitBackdropFilter: 'blur(18px)',
-            border: '1px solid rgba(255,140,0,0.18)',
             borderRadius: 14,
             padding: '20px 24px',
             minWidth: 290,
             maxWidth: 370,
-            boxShadow: '0 6px 28px rgba(255,140,0,0.10)',
+            fontFamily: "'JetBrains Mono', monospace",
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{
@@ -716,12 +725,13 @@ export default function MapPage() {
               )}
             </div>
           </div>
+          </div>
         )}
 
         {/* ── "Find a Pulse" pill + live count ── */}
         <div style={{
           position: 'absolute',
-          bottom: 104,
+          bottom: 'calc(104px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1001,
@@ -798,7 +808,11 @@ export default function MapPage() {
           zIndex: 1000,
           background: 'linear-gradient(to right, #ff8c00 0%, #ffd060 100%)',
           borderTop: '1px solid rgba(255,140,0,0.35)',
-          padding: '10px 14px 14px',
+          paddingTop: 10,
+          paddingLeft: 14,
+          paddingRight: 14,
+          /* Push content above iPhone home indicator */
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
           display: 'flex',
           flexDirection: 'column',
           gap: 6,
@@ -918,7 +932,7 @@ export default function MapPage() {
         <div style={{
           position: 'absolute',
           right: 14,
-          bottom: 158,
+          bottom: 'calc(158px + env(safe-area-inset-bottom, 0px))',
           zIndex: 1001,
           display: 'flex',
           flexDirection: 'column',
