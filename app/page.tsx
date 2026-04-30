@@ -872,35 +872,45 @@ export default function MapPage() {
         {/* ── "Find a Pulse" pill ── */}
         <div style={{
           position: 'absolute',
-          bottom: 'calc(128px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(136px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1001,
+          width: 'calc(100vw - 28px)',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 6,
         }}>
-          {/* Stripe border wrapper — animates only when filter is active */}
+          {/* Stripe border — matches header card exactly: padding 3, radius 13 */}
           <div style={{
-            borderRadius: 26,
-            padding: 2,
+            width: '100%',
+            borderRadius: 13,
+            padding: 3,
+            boxSizing: 'border-box' as const,
             background: VHDA_STRIPE_H,
             backgroundSize: '270px 100%',
             animation: filterLive ? 'ribbonScroll 3s linear infinite' : 'none',
             boxShadow: filterLive
               ? '0 4px 18px rgba(0,0,0,0.35)'
-              : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
+              : IVORY_SHADOW,
           }}>
             <button
               onClick={() => setFilterLive(f => !f)}
               style={{
-                display: 'inline-flex',
+                display: 'flex',
                 alignItems: 'center',
+                justifyContent: 'center',
                 gap: 8,
+                width: '100%',
+                minHeight: 64,
                 background: filterLive
                   ? 'rgba(20,20,20,0.88)'
-                  : 'rgba(255,255,255,0.95)',
+                  : IVORY,
                 border: 'none',
                 color: filterLive ? '#fff' : '#1b2424',
-                borderRadius: 24,
-                padding: '10px 22px',
+                borderRadius: 10,
+                padding: '12px 18px',
                 cursor: 'pointer',
                 fontFamily: 'inherit',
                 fontSize: 12,
@@ -910,6 +920,7 @@ export default function MapPage() {
                 backdropFilter: 'blur(14px)',
                 WebkitBackdropFilter: 'blur(14px)',
                 transition: 'background 0.18s ease, color 0.18s ease',
+                boxSizing: 'border-box' as const,
               }}
             >
               <span style={{
@@ -919,27 +930,23 @@ export default function MapPage() {
                 animation: 'pulseDot 1.6s ease-in-out infinite',
               }} />
               find a pulse
-              <span style={{
-                width: 1, height: 12,
-                background: filterLive ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
-                display: 'inline-block', flexShrink: 0,
-                borderRadius: 1,
-              }} />
-              <span style={{
-                fontSize: 10,
-                color: filterLive ? 'rgba(255,255,255,0.7)' : (livePinCount > 0 ? '#ff8c00' : 'rgba(0,0,0,0.4)'),
-                fontWeight: livePinCount > 0 && !filterLive ? 600 : 400,
-                letterSpacing: '0.05em',
-              }}>
-                {(filterLive || filterGenre || filterTime !== null)
-                  ? `${filteredSets.length} of ${sets.length}`
-                  : livePinCount > 0
-                    ? `${livePinCount} live · ${sets.length} sets`
-                    : `${sets.length} sets`
-                }
-              </span>
             </button>
           </div>
+          {/* Count below the button */}
+          <span style={{
+            fontSize: 10,
+            color: livePinCount > 0 ? '#ff8c00' : 'rgba(255,255,255,0.55)',
+            letterSpacing: '0.08em',
+            fontWeight: livePinCount > 0 ? 600 : 400,
+            whiteSpace: 'nowrap',
+          }}>
+            {(filterLive || filterGenre || filterTime !== null)
+              ? `${filteredSets.length} of ${sets.length} sets`
+              : livePinCount > 0
+                ? `${livePinCount} live · ${sets.length} sets`
+                : `${sets.length} sets`
+            }
+          </span>
         </div>
 
         {/* ── VHDA side ribbons — sit behind filter bar and header card ── */}
