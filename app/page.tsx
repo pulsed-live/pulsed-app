@@ -942,18 +942,18 @@ export default function MapPage() {
           </span>
         </div>
 
-        {/* ── VHDA side ribbons — z1001 keeps them visible on top of the filter bar + halo ── */}
+        {/* ── VHDA side ribbons — sit behind filter bar and header card ── */}
         <div style={{
           position: 'fixed', top: 0, bottom: 0, left: 0,
           width: 6,
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
-          zIndex: 1001, pointerEvents: 'none',
+          zIndex: 500, pointerEvents: 'none',
         }} />
         <div style={{
           position: 'fixed', top: 0, bottom: 0, right: 0,
           width: 6,
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
-          zIndex: 1001, pointerEvents: 'none',
+          zIndex: 500, pointerEvents: 'none',
         }} />
 
         {/* ── Filter bar — Genre + Time rows, pinned to bottom ── */}
