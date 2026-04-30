@@ -517,7 +517,7 @@ export default function MapPage() {
               position: 'absolute', inset: 0,
               background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
               opacity: 0,
-              animation: 'clashFlash 0.85s ease-out 1.02s both',
+              animation: 'clashFlash 1.7s ease-out 1.02s both',
             }} />
 
             {/* ── Logos: long dark pause → fly in → clash ── */}
