@@ -138,12 +138,15 @@ export default function MapPage() {
       })
 
       L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap © CARTO',
+        attribution: '© <a href="https://www.openstreetmap.org/copyright">OSM</a> © <a href="https://carto.com/">CARTO</a>',
         subdomains: 'abcd',
         maxZoom: 19,
       }).addTo(map)
 
-      // Zoom controls intentionally omitted — pinch-to-zoom + center button is sufficient
+      // Strip the "Leaflet" branding prefix — OSM/CARTO attribution stays (required by their terms)
+      map.attributionControl.setPrefix('')
+
+      // Zoom controls intentionally omitted — custom themed buttons added in JSX
       // GPS dot
       let locationMarker: any = null
       let accuracyCircle: any = null
@@ -892,40 +895,102 @@ export default function MapPage() {
 
         </div>
 
-        {/* ── Center-on-me button — above zoom controls ── */}
-        <button
-          onClick={() => {
-            if (!locationLatLngRef.current || !leafletMap.current) return
-            leafletMap.current.setView(locationLatLngRef.current, 17, { animate: true })
-          }}
-          title="Center on my location"
-          style={{
-            position: 'absolute',
-            bottom: 158, right: 14,
-            zIndex: 1001,
-            width: 34, height: 34,
-            borderRadius: '50%',
-            background: IVORY,
-            backdropFilter: 'blur(14px)',
-            WebkitBackdropFilter: 'blur(14px)',
-            border: `1px solid ${IVORY_BORDER}`,
-            boxShadow: IVORY_SHADOW,
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 0,
-          }}
-        >
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="8" cy="8" r="3" fill="#619882" />
-            <circle cx="8" cy="8" r="5.5" stroke="#426368" strokeWidth="1.2" fill="none" />
-            <line x1="8" y1="1" x2="8" y2="3.5" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="8" y1="12.5" x2="8" y2="15" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="1" y1="8" x2="3.5" y2="8" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
-            <line x1="12.5" y1="8" x2="15" y2="8" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
-          </svg>
-        </button>
+        {/* ── Map controls cluster — right side, above filter bar ── */}
+        <div style={{
+          position: 'absolute',
+          right: 14,
+          bottom: 158,
+          zIndex: 1001,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 4,
+        }}>
+          {/* Zoom + */}
+          <button
+            onClick={() => leafletMap.current?.zoomIn()}
+            title="Zoom in"
+            style={{
+              width: 34, height: 34,
+              borderRadius: '50%',
+              background: IVORY,
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+              border: `1px solid ${IVORY_BORDER}`,
+              boxShadow: IVORY_SHADOW,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              color: '#426368',
+              fontSize: 20,
+              fontWeight: 300,
+              lineHeight: 1,
+              fontFamily: 'inherit',
+            }}
+          >+</button>
+
+          {/* Zoom − */}
+          <button
+            onClick={() => leafletMap.current?.zoomOut()}
+            title="Zoom out"
+            style={{
+              width: 34, height: 34,
+              borderRadius: '50%',
+              background: IVORY,
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+              border: `1px solid ${IVORY_BORDER}`,
+              boxShadow: IVORY_SHADOW,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+              color: '#426368',
+              fontSize: 20,
+              fontWeight: 300,
+              lineHeight: 1,
+              fontFamily: 'inherit',
+            }}
+          >−</button>
+
+          {/* Divider */}
+          <div style={{ width: 20, height: 1, background: IVORY_BORDER, margin: '2px 0' }} />
+
+          {/* Center-on-me */}
+          <button
+            onClick={() => {
+              if (!locationLatLngRef.current || !leafletMap.current) return
+              leafletMap.current.setView(locationLatLngRef.current, 17, { animate: true })
+            }}
+            title="Center on my location"
+            style={{
+              width: 34, height: 34,
+              borderRadius: '50%',
+              background: IVORY,
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+              border: `1px solid ${IVORY_BORDER}`,
+              boxShadow: IVORY_SHADOW,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: 0,
+            }}
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="8" cy="8" r="3" fill="#619882" />
+              <circle cx="8" cy="8" r="5.5" stroke="#426368" strokeWidth="1.2" fill="none" />
+              <line x1="8" y1="1" x2="8" y2="3.5" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+              <line x1="8" y1="12.5" x2="8" y2="15" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+              <line x1="1" y1="8" x2="3.5" y2="8" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+              <line x1="12.5" y1="8" x2="15" y2="8" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+            </svg>
+          </button>
+        </div>
 
         {/* ── Botanical overlays — removed pending new inspiration ── */}
 
