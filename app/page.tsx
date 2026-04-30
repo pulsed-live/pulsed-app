@@ -143,8 +143,7 @@ export default function MapPage() {
         maxZoom: 19,
       }).addTo(map)
 
-      L.control.zoom({ position: 'bottomright' }).addTo(map)
-
+      // Zoom controls intentionally omitted — pinch-to-zoom + center button is sufficient
       // GPS dot
       let locationMarker: any = null
       let accuracyCircle: any = null
@@ -397,8 +396,8 @@ export default function MapPage() {
           0%, 100% { opacity: 1; transform: scale(1); }
           50%       { opacity: 0.55; transform: scale(1.45); }
         }
-        /* Raise zoom controls above 2-row filter bar + floating pill (~104px) */
-        .leaflet-bottom.leaflet-right { bottom: 106px !important; right: 12px !important; }
+        /* Raise Leaflet attribution above 2-row filter bar */
+        .leaflet-bottom.leaflet-right { bottom: 100px !important; right: 0 !important; }
         /* Style attribution to match VHDA brand */
         .leaflet-control-attribution {
           font-family: 'JetBrains Mono', monospace !important;
@@ -419,6 +418,20 @@ export default function MapPage() {
 
         {/* Map */}
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+
+        {/* ── Safe-area top cap — covers Dynamic Island zone with dark bg ── */}
+        {/* height is 0 on desktop (env() returns 0 without viewport-fit=cover) */}
+        {/* On iPhone it fills the exact safe-area inset, creating breathing room */}
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          height: 'env(safe-area-inset-top, 0px)',
+          background: 'rgba(10,10,15,0.82)',
+          backdropFilter: 'blur(6px)',
+          WebkitBackdropFilter: 'blur(6px)',
+          zIndex: 2000,
+          pointerEvents: 'none',
+        }} />
 
         {/* ── Header — top left ── */}
         <div style={{
@@ -888,7 +901,7 @@ export default function MapPage() {
           title="Center on my location"
           style={{
             position: 'absolute',
-            bottom: 178, right: 14,
+            bottom: 158, right: 14,
             zIndex: 1001,
             width: 34, height: 34,
             borderRadius: '50%',
