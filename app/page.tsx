@@ -544,7 +544,7 @@ export default function MapPage() {
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(204px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(248px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -672,7 +672,7 @@ export default function MapPage() {
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(204px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(248px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -753,7 +753,7 @@ export default function MapPage() {
         {/* ── "Find a Pulse" pill + live count ── */}
         <div style={{
           position: 'absolute',
-          bottom: 'calc(148px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(192px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1001,
@@ -847,7 +847,7 @@ export default function MapPage() {
           paddingLeft: 14,
           paddingRight: 14,
           /* Push content above iPhone home indicator */
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 14px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 58px)',
           display: 'flex',
           flexDirection: 'column',
           gap: 6,
@@ -967,7 +967,7 @@ export default function MapPage() {
         <div style={{
           position: 'absolute',
           right: 14,
-          bottom: 'calc(200px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(244px + env(safe-area-inset-bottom, 0px))',
           zIndex: 1001,
           display: 'flex',
           flexDirection: 'column',
