@@ -451,106 +451,122 @@ export default function MapPage() {
           pointerEvents: 'none',
         }} />
 
-        {/* ── VHDA color ribbon — page edge strips ── */}
-        {/* 3px animated stripes around the viewport edges; pointer-events off */}
+        {/* ── VHDA color ribbon — static page edge strips ── */}
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, height: 3,
           zIndex: 1998, pointerEvents: 'none',
           background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
-          animation: 'ribbonScroll 10s linear infinite',
         }} />
         <div style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, height: 3,
           zIndex: 1998, pointerEvents: 'none',
           background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
-          animation: 'ribbonScroll 10s linear infinite',
         }} />
         <div style={{
           position: 'fixed', top: 0, left: 0, bottom: 0, width: 3,
           zIndex: 1998, pointerEvents: 'none',
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
-          animation: 'ribbonScrollV 10s linear infinite',
         }} />
         <div style={{
           position: 'fixed', top: 0, right: 0, bottom: 0, width: 3,
           zIndex: 1998, pointerEvents: 'none',
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
-          animation: 'ribbonScrollV 10s linear infinite',
         }} />
 
         {/* ── Header — top left ── */}
-        <div className="vhda-ribbon" style={{
+        {/* Outer wrapper: stripe background + 2px padding = static VHDA border */}
+        <div style={{
           position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 14px)', left: 14, zIndex: 1000,
-          ...panelBase,
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '12px 16px',
+          borderRadius: 12, padding: 2,
+          background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+          boxShadow: IVORY_SHADOW,
         }}>
-          {/* PULSED brand */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
-            <span style={{
-              width: 8, height: 8, borderRadius: '50%',
-              background: '#ff8c00', display: 'inline-block',
-              boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
-            }} />
-            <span style={{ color: '#ff8c00', fontSize: 14, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
-              PULSED
-            </span>
+          <div style={{
+            background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            borderRadius: 10,
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 16px',
+          }}>
+            {/* PULSED brand */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+              <span style={{
+                width: 8, height: 8, borderRadius: '50%',
+                background: '#ff8c00', display: 'inline-block',
+                boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
+              }} />
+              <span style={{ color: '#ff8c00', fontSize: 14, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
+                PULSED
+              </span>
+            </div>
+            {/* Divider */}
+            <span style={{ width: 1, height: 28, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
+            {/* Porchfest logo */}
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/pf26-logo-navy.png"
+              alt="Virginia Highland Porchfest 2026"
+              style={{ height: 34, width: 'auto', opacity: 0.85, display: 'block' }}
+            />
           </div>
-          {/* Divider */}
-          <span style={{ width: 1, height: 28, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
-          {/* Porchfest logo */}
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/pf26-logo-navy.png"
-            alt="Virginia Highland Porchfest 2026"
-            style={{ height: 34, width: 'auto', opacity: 0.85, display: 'block' }}
-          />
         </div>
 
         {/* ── Legend — top left, below header ── */}
-        <div className="vhda-ribbon" style={{
+        <div style={{
           position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 76px)', left: 14, zIndex: 1000,
-          ...panelBase,
-          borderRadius: 8,
-          display: 'flex', alignItems: 'center', gap: 10,
-          padding: '8px 14px',
-          fontSize: 10, color: NAVY_TEXT,
-          letterSpacing: '0.05em',
+          borderRadius: 10, padding: 2,
+          background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+          boxShadow: IVORY_SHADOW,
         }}>
-          {/* Live — VHDA-palette gradient bar */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{
-              width: 24, height: 6, borderRadius: 3, flexShrink: 0,
-              background: 'linear-gradient(to right, #619cab, #c25534, #C17C2E, #619882, #426368)',
-              display: 'inline-block',
-            }} />
-            live · by time
-          </div>
-          <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'transparent', border: '1.5px solid #888', display: 'inline-block', flexShrink: 0 }} />
-            scheduled
-          </div>
-          <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#e03c3c', display: 'inline-block', flexShrink: 0 }} />
-            cancelled
+          <div style={{
+            background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            borderRadius: 8,
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '8px 14px',
+            fontSize: 10, color: NAVY_TEXT,
+            letterSpacing: '0.05em',
+          }}>
+            {/* Live — VHDA-palette gradient bar */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{
+                width: 24, height: 6, borderRadius: 3, flexShrink: 0,
+                background: 'linear-gradient(to right, #619cab, #c25534, #C17C2E, #619882, #426368)',
+                display: 'inline-block',
+              }} />
+              live · by time
+            </div>
+            <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'transparent', border: '1.5px solid #888', display: 'inline-block', flexShrink: 0 }} />
+              scheduled
+            </div>
+            <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#e03c3c', display: 'inline-block', flexShrink: 0 }} />
+              cancelled
+            </div>
           </div>
         </div>
 
         {/* ── Set count — top right ── */}
-        <div className="vhda-ribbon" style={{
+        <div style={{
           position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 14px)', right: 14, zIndex: 1000,
-          ...panelBase,
-          padding: '10px 14px',
-          fontSize: 11, color: NAVY_TEXT,
+          borderRadius: 12, padding: 2,
+          background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+          boxShadow: IVORY_SHADOW,
         }}>
-          {(filterLive || filterGenre || filterTime !== null)
-            ? `${filteredSets.length} of ${sets.length}`
-            : livePinCount > 0
-              ? <span style={{ color: '#ff8c00' }}>{livePinCount} live now</span>
-              : `${sets.length} sets`
-          }
+          <div style={{
+            background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+            borderRadius: 10,
+            padding: '10px 14px',
+            fontSize: 11, color: NAVY_TEXT,
+          }}>
+            {(filterLive || filterGenre || filterTime !== null)
+              ? `${filteredSets.length} of ${sets.length}`
+              : livePinCount > 0
+                ? <span style={{ color: '#ff8c00' }}>{livePinCount} live now</span>
+                : `${sets.length} sets`
+            }
+          </div>
         </div>
 
         {/* ── No-results message ── */}
@@ -771,19 +787,23 @@ export default function MapPage() {
         )}
 
         {/* ── "Find a Pulse" pill — floats above the gradient bar ── */}
-        {/* Ribbon wrapper: provides the animated VHDA stripe border */}
-        <div
-          className="vhda-ribbon vhda-ribbon-fast"
-          style={{
-            position: 'absolute',
-            bottom: 104,
-            left: '50%',
-            transform: 'translateX(-50%)',
-            zIndex: 1001,
-            borderRadius: 26,
-            display: 'inline-flex',
-          }}
-        >
+        {/* ── "Find a Pulse" pill — floats above the gradient bar ── */}
+        {/* Wrapper: static VHDA stripe border normally; animates when filter is active */}
+        <div style={{
+          position: 'absolute',
+          bottom: 104,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          zIndex: 1001,
+          borderRadius: 26,
+          padding: 2,
+          background: VHDA_STRIPE_H,
+          backgroundSize: '270px 100%',
+          animation: filterLive ? 'ribbonScroll 3s linear infinite' : 'none',
+          boxShadow: filterLive
+            ? '0 4px 18px rgba(0,0,0,0.35)'
+            : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
+        }}>
           <button
             onClick={() => setFilterLive(f => !f)}
             style={{
@@ -803,12 +823,9 @@ export default function MapPage() {
               fontWeight: filterLive ? 700 : 500,
               letterSpacing: '0.06em',
               whiteSpace: 'nowrap',
-              boxShadow: filterLive
-                ? '0 4px 18px rgba(0,0,0,0.35)'
-                : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
               backdropFilter: 'blur(14px)',
               WebkitBackdropFilter: 'blur(14px)',
-              transition: 'all 0.18s ease',
+              transition: 'background 0.18s ease, color 0.18s ease',
             }}
           >
             <span style={{

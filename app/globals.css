@@ -38,46 +38,8 @@ body {
 }
 .sponsor-pin { animation: sponsorPulse 2s ease-out infinite; }
 
-/* ── VHDA 9-color alternating stripe ─────────────────────────────────────
-   30px per time-slot color × 9 slots = 270px total before repeat.
-   Hard color stops (no gradient between bands) give the crisp stripe look.
-   Animate background-position to create a scrolling ribbon effect.       */
+/* ── VHDA ribbon scroll — only used on the active pulse button ── */
 @keyframes ribbonScroll {
   from { background-position: 0 0; }
   to   { background-position: 270px 0; }
 }
-@keyframes ribbonScrollV {
-  from { background-position: 0 0; }
-  to   { background-position: 0 270px; }
-}
-
-/* Applied to any div/button that needs the animated VHDA stripe border.
-   The ::before pseudo-element sits 2px behind and around the element,
-   showing through only at the edges to create a 2px animated border.    */
-.vhda-ribbon {
-  position: relative;
-  isolation: isolate;
-}
-.vhda-ribbon::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: inherit;
-  background: repeating-linear-gradient(
-    90deg,
-    #81817f   0px  30px,
-    #619cab  30px  60px,
-    #c25534  60px  90px,
-    #619882  90px 120px,
-    #7A525B 120px 150px,
-    #C17C2E 150px 180px,
-    #426368 180px 210px,
-    #787342 210px 240px,
-    #1b2424 240px 270px
-  );
-  background-size: 270px 100%;
-  animation: ribbonScroll 8s linear infinite;
-  z-index: -1;
-}
-/* Faster variant for the pulse button */
-.vhda-ribbon-fast::before { animation-duration: 3s; }
