@@ -1,9 +1,15 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "Pulsed — live music map",
   description: "the future of music culture",
+};
+
+// viewport-fit=cover exposes env(safe-area-inset-*) so UI panels
+// can dodge the Dynamic Island / notch on iPhone
+export const viewport: Viewport = {
+  viewportFit: "cover",
 };
 
 export default function RootLayout({

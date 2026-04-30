@@ -410,7 +410,7 @@ export default function MapPage() {
 
         {/* ── Header — top left ── */}
         <div style={{
-          position: 'absolute', top: 14, left: 14, zIndex: 1000,
+          position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 14px)', left: 14, zIndex: 1000,
           ...panelBase,
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '12px 16px',
@@ -439,7 +439,7 @@ export default function MapPage() {
 
         {/* ── Legend — top left, below header ── */}
         <div style={{
-          position: 'absolute', top: 76, left: 14, zIndex: 1000,
+          position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 76px)', left: 14, zIndex: 1000,
           ...panelBase,
           borderRadius: 8,
           display: 'flex', alignItems: 'center', gap: 10,
@@ -470,7 +470,7 @@ export default function MapPage() {
 
         {/* ── Set count — top right ── */}
         <div style={{
-          position: 'absolute', top: 14, right: 14, zIndex: 1000,
+          position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 14px)', right: 14, zIndex: 1000,
           ...panelBase,
           padding: '10px 14px',
           fontSize: 11, color: NAVY_TEXT,
