@@ -823,26 +823,26 @@ export default function MapPage() {
           </span>
         </div>
 
-        {/* ── VHDA side ribbons — left and right edges, full height, z998 so filter bar + header sit on top ── */}
+        {/* ── VHDA side ribbons — z1001 keeps them visible on top of the filter bar + halo ── */}
         <div style={{
           position: 'fixed', top: 0, bottom: 0, left: 0,
           width: 6,
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
-          zIndex: 998, pointerEvents: 'none',
+          zIndex: 1001, pointerEvents: 'none',
         }} />
         <div style={{
           position: 'fixed', top: 0, bottom: 0, right: 0,
           width: 6,
           background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
-          zIndex: 998, pointerEvents: 'none',
+          zIndex: 1001, pointerEvents: 'none',
         }} />
 
-        {/* ── Transparent-to-orange gradient halo — raises the visual start of the filter bar ── */}
+        {/* ── Transparent-to-orange gradient halo — bottom aligned to filter bar top, 40px fade ── */}
         <div style={{
           position: 'absolute',
-          bottom: 'calc(92px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(102px + env(safe-area-inset-bottom, 0px))',
           left: 0, right: 0,
-          height: 60,
+          height: 40,
           background: 'linear-gradient(to bottom, transparent 0%, rgba(255,140,0,0.88) 100%)',
           zIndex: 999,
           pointerEvents: 'none',
