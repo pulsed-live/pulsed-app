@@ -377,6 +377,14 @@ export default function MapPage() {
           0%   { transform: scale(1);   opacity: 0.7; }
           100% { transform: scale(3.2); opacity: 0;   }
         }
+        @keyframes popupSlideUp {
+          0%   { transform: translateX(-50%) translateY(16px); opacity: 0; }
+          100% { transform: translateX(-50%) translateY(0);    opacity: 1; }
+        }
+        @keyframes liveBadgePulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,140,0,0.55); }
+          50%       { box-shadow: 0 0 0 5px rgba(255,140,0,0);  }
+        }
         /* Raise zoom controls above filter bar */
         .leaflet-bottom.leaflet-right { bottom: 68px !important; right: 12px !important; }
         /* Style attribution to match VHDA brand */
@@ -509,20 +517,45 @@ export default function MapPage() {
             maxWidth: 370,
             boxShadow: '0 6px 28px rgba(66,99,104,0.14)',
             fontFamily: "'JetBrains Mono', monospace",
+            animation: 'popupSlideUp 0.22s cubic-bezier(0.22,1,0.36,1) both',
           }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{
-                fontSize: 10,
-                padding: '3px 10px',
-                borderRadius: 20,
-                background: effectiveStatus(selected) === 'cancelled' ? 'rgba(224,60,60,0.1)' :
-                             effectiveStatus(selected) === 'scheduled' ? 'rgba(66,99,104,0.07)' :
-                             `${pinColor(selected)}1a`,
-                color: effectiveStatus(selected) === 'scheduled' ? NAVY_TEXT : pinColor(selected),
-                letterSpacing: '0.05em',
-              }}>
-                {STATUS_LABEL[effectiveStatus(selected)]}
-              </span>
+              {effectiveStatus(selected) === 'live' ? (
+                <span style={{
+                  fontSize: 10,
+                  padding: '3px 10px 3px 8px',
+                  borderRadius: 20,
+                  background: `${pinColor(selected)}22`,
+                  color: pinColor(selected),
+                  letterSpacing: '0.06em',
+                  fontWeight: 600,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  animation: 'liveBadgePulse 1.8s ease-in-out infinite',
+                }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: '50%',
+                    background: pinColor(selected),
+                    display: 'inline-block',
+                    flexShrink: 0,
+                  }} />
+                  live now
+                </span>
+              ) : (
+                <span style={{
+                  fontSize: 10,
+                  padding: '3px 10px',
+                  borderRadius: 20,
+                  background: effectiveStatus(selected) === 'cancelled' ? 'rgba(224,60,60,0.1)' :
+                               effectiveStatus(selected) === 'scheduled' ? 'rgba(66,99,104,0.07)' :
+                               `${pinColor(selected)}1a`,
+                  color: effectiveStatus(selected) === 'scheduled' ? NAVY_TEXT : pinColor(selected),
+                  letterSpacing: '0.05em',
+                }}>
+                  {STATUS_LABEL[effectiveStatus(selected)]}
+                </span>
+              )}
               <button
                 onClick={() => setSelected(null)}
                 style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
@@ -672,10 +705,10 @@ export default function MapPage() {
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
           zIndex: 1000,
-          background: 'linear-gradient(to right, rgba(255,140,0,0.22) 0%, rgba(255,176,48,0.14) 45%, rgba(233,232,228,0.96) 100%)',
+          background: 'linear-gradient(to right, #ff8c00 0%, #ffd060 100%)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(255,140,0,0.18)',
+          borderTop: '1px solid rgba(255,140,0,0.35)',
           padding: '10px 16px 14px',
           overflow: 'hidden',
         }}>
@@ -683,7 +716,7 @@ export default function MapPage() {
           <div style={{
             position: 'absolute',
             top: 0, right: 0, bottom: 0, width: 48,
-            background: 'linear-gradient(to right, transparent, rgba(233,232,228,0.96))',
+            background: 'linear-gradient(to right, transparent, #ffd060)',
             pointerEvents: 'none',
             zIndex: 1,
           }} />
@@ -699,9 +732,10 @@ export default function MapPage() {
               onClick={() => setFilterLive(f => !f)}
               style={{
                 ...pillBase,
-                background: filterLive ? '#ff8c00' : 'rgba(255,255,255,0.7)',
-                border: filterLive ? '1px solid #ff8c00' : `1px solid ${IVORY_BORDER}`,
-                color: filterLive ? '#fff' : NAVY_TEXT,
+                background: filterLive ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.82)',
+                border: filterLive ? '1px solid rgba(0,0,0,0.18)' : '1px solid rgba(255,255,255,0.5)',
+                color: filterLive ? '#fff' : '#1b2424',
+                fontWeight: filterLive ? 600 : 400,
               }}
             >
               ● live now
@@ -714,9 +748,10 @@ export default function MapPage() {
                 onClick={() => setFilterGenre(g => g === genre ? null : genre)}
                 style={{
                   ...pillBase,
-                  background: filterGenre === genre ? 'rgba(255,140,0,0.1)' : 'rgba(255,255,255,0.7)',
-                  border: filterGenre === genre ? '1px solid rgba(255,140,0,0.5)' : `1px solid ${IVORY_BORDER}`,
-                  color: filterGenre === genre ? '#ff8c00' : NAVY_TEXT,
+                  background: filterGenre === genre ? 'rgba(0,0,0,0.22)' : 'rgba(255,255,255,0.82)',
+                  border: filterGenre === genre ? '1px solid rgba(0,0,0,0.18)' : '1px solid rgba(255,255,255,0.5)',
+                  color: filterGenre === genre ? '#fff' : '#1b2424',
+                  fontWeight: filterGenre === genre ? 600 : 400,
                 }}
               >
                 {genre}
@@ -734,7 +769,7 @@ export default function MapPage() {
           title="Center on my location"
           style={{
             position: 'absolute',
-            bottom: 136, right: 14,
+            bottom: 178, right: 14,
             zIndex: 1001,
             width: 34, height: 34,
             borderRadius: '50%',
