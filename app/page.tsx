@@ -469,25 +469,9 @@ export default function MapPage() {
           18%  { opacity: 0.78; }
           100% { opacity: 0;    }
         }
-        @keyframes introCardAppear {
-          from { opacity: 0; transform: scale(0.88); }
-          to   { opacity: 1; transform: scale(1);    }
-        }
         @keyframes introFadeOut {
           from { opacity: 1; }
           to   { opacity: 0; }
-        }
-        /* Dark bg fades out while card flies up */
-        @keyframes overlayBgFade {
-          from { opacity: 1; }
-          to   { opacity: 0; }
-        }
-        /* Card shoots from centre up to header position.
-           Real header: top:14px, height:~70px → centre at 49px from top.
-           Anchor starts at 50vh. Delta = 50vh - 49px → translate(-50vh + 49px). */
-        @keyframes cardFlyUp {
-          from { transform: translateY(0);                  }
-          to   { transform: translateY(calc(-50vh + 49px)); }
         }
         /* Raise Leaflet attribution above 2-row filter bar */
         .leaflet-bottom.leaflet-right { bottom: 100px !important; right: 0 !important; }
@@ -568,7 +552,6 @@ export default function MapPage() {
               {/* × separator */}
               <span style={{
                 color: 'rgba(255,255,255,0.22)', fontSize: 22, fontWeight: 200,
-                animation: 'introCardAppear 0.2s ease-out 1.04s both',
                 flexShrink: 0,
               }}>×</span>
               {/* PF logo */}
@@ -585,43 +568,6 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* ── Header card: forms centre-screen after clash, stays put ── */}
-            <div style={{
-              position: 'absolute',
-              left: '50%', top: '50%',
-              transform: 'translate(-50%, -50%)',
-            }}>
-              <div style={{
-                borderRadius: 13, padding: 3,
-                background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
-                boxShadow: IVORY_SHADOW,
-                maxWidth: 'calc(100vw - 28px)',
-                boxSizing: 'border-box' as const,
-                animation: 'introCardAppear 0.3s cubic-bezier(0.22,1,0.36,1) 1.62s both',
-                opacity: 0,
-              }}>
-                <div style={{
-                  background: IVORY, borderRadius: 10,
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '12px 18px', overflow: 'hidden',
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                    <span style={{
-                      width: 9, height: 9, borderRadius: '50%',
-                      background: '#ff8c00', display: 'inline-block', flexShrink: 0,
-                      boxShadow: '0 0 10px #ff8c00cc',
-                    }} />
-                    <span style={{ color: '#ff8c00', fontSize: 15, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
-                      PULSED
-                    </span>
-                  </div>
-                  <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/pf26-logo-navy.png" alt="Virginia Highland Porchfest 2026"
-                    style={{ height: 40, width: 'auto', opacity: 0.9, display: 'block', flexShrink: 0 }} />
-                </div>
-              </div>
-            </div>
 
           </div>
         )}
