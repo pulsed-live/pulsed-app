@@ -522,15 +522,13 @@ export default function MapPage() {
           <div style={{
             position: 'fixed', inset: 0, zIndex: 9999,
             pointerEvents: 'none',
+            /* Whole overlay fades out after clash + card settle */
+            animation: 'introFadeOut 0.55s ease-in 2.1s both',
           }}>
-            {/* Dark background — fades out while card flies up */}
-            <div style={{
-              position: 'absolute', inset: 0,
-              background: '#0a0a0f',
-              animation: 'overlayBgFade 0.8s ease-in 2.0s both',
-            }} />
+            {/* Dark background */}
+            <div style={{ position: 'absolute', inset: 0, background: '#0a0a0f' }} />
 
-            {/* VHDA stripe burst at moment of clash — longer, more dramatic */}
+            {/* VHDA stripe burst at moment of clash */}
             <div style={{
               position: 'absolute', inset: 0,
               background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
@@ -538,8 +536,7 @@ export default function MapPage() {
               animation: 'clashFlash 0.85s ease-out 1.02s both',
             }} />
 
-            {/* ── Phase 1: individual logos — longer dark pause before entry ── */}
-            {/* logos start at 0.5s (was 0.06s), land at 1.02s */}
+            {/* ── Logos: long dark pause → fly in → clash ── */}
             <div style={{
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -588,52 +585,40 @@ export default function MapPage() {
               </div>
             </div>
 
-            {/* ── Phase 2+3: header card forms at centre then flies to top ── */}
-            {/* card appears at 1.62s, flies up starting at 2.0s */}
+            {/* ── Header card: forms centre-screen after clash, stays put ── */}
             <div style={{
               position: 'absolute',
               left: '50%', top: '50%',
               transform: 'translate(-50%, -50%)',
             }}>
-              {/* Inner: the fly-up animation moves this element upward */}
               <div style={{
-                animation: 'cardFlyUp 0.75s cubic-bezier(0.22,1,0.36,1) 2.0s both',
+                borderRadius: 13, padding: 3,
+                background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+                boxShadow: IVORY_SHADOW,
+                maxWidth: 'calc(100vw - 28px)',
+                boxSizing: 'border-box' as const,
+                animation: 'introCardAppear 0.3s cubic-bezier(0.22,1,0.36,1) 1.62s both',
+                opacity: 0,
               }}>
-                {/* The card — identical to the real fixed header card */}
                 <div style={{
-                  borderRadius: 13, padding: 3,
-                  background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
-                  boxShadow: IVORY_SHADOW,
-                  maxWidth: 'calc(100vw - 28px)',
-                  boxSizing: 'border-box' as const,
-                  animation: 'introCardAppear 0.3s cubic-bezier(0.22,1,0.36,1) 1.62s both',
-                  opacity: 0,
+                  background: IVORY, borderRadius: 10,
+                  display: 'flex', alignItems: 'center', gap: 12,
+                  padding: '12px 18px', overflow: 'hidden',
                 }}>
-                  <div style={{
-                    background: IVORY,
-                    borderRadius: 10,
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 18px',
-                    overflow: 'hidden',
-                  }}>
-                    {/* ● PULSED */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
-                      <span style={{
-                        width: 9, height: 9, borderRadius: '50%',
-                        background: '#ff8c00', display: 'inline-block', flexShrink: 0,
-                        boxShadow: '0 0 10px #ff8c00cc',
-                      }} />
-                      <span style={{ color: '#ff8c00', fontSize: 15, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
-                        PULSED
-                      </span>
-                    </div>
-                    {/* divider */}
-                    <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
-                    {/* PF logo */}
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/pf26-logo-navy.png" alt="Virginia Highland Porchfest 2026"
-                      style={{ height: 40, width: 'auto', opacity: 0.9, display: 'block', flexShrink: 0 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+                    <span style={{
+                      width: 9, height: 9, borderRadius: '50%',
+                      background: '#ff8c00', display: 'inline-block', flexShrink: 0,
+                      boxShadow: '0 0 10px #ff8c00cc',
+                    }} />
+                    <span style={{ color: '#ff8c00', fontSize: 15, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
+                      PULSED
+                    </span>
                   </div>
+                  <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/pf26-logo-navy.png" alt="Virginia Highland Porchfest 2026"
+                    style={{ height: 40, width: 'auto', opacity: 0.9, display: 'block', flexShrink: 0 }} />
                 </div>
               </div>
             </div>
@@ -732,7 +717,7 @@ export default function MapPage() {
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(248px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(202px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -860,7 +845,7 @@ export default function MapPage() {
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(248px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(202px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -941,7 +926,7 @@ export default function MapPage() {
         {/* ── "Find a Pulse" pill + live count ── */}
         <div style={{
           position: 'absolute',
-          bottom: 'calc(192px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(146px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1001,
@@ -1035,7 +1020,7 @@ export default function MapPage() {
           paddingLeft: 14,
           paddingRight: 14,
           /* Push content above iPhone home indicator */
-          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 58px)',
+          paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)',
           display: 'flex',
           flexDirection: 'column',
           gap: 6,
@@ -1177,7 +1162,7 @@ export default function MapPage() {
         <div style={{
           position: 'absolute',
           right: 14,
-          bottom: 'calc(244px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(198px + env(safe-area-inset-bottom, 0px))',
           zIndex: 1001,
           display: 'flex',
           flexDirection: 'column',
