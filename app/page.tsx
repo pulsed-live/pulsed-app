@@ -65,6 +65,8 @@ export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null)
   const leafletMap = useRef<any>(null)
   const markersRef = useRef<any[]>([])
+  const locationLatLngRef = useRef<any>(null)   // user's GPS location
+  const hasFitRef = useRef(false)               // has the map auto-fitted to pins yet?
   const [sets, setSets] = useState<SetRow[]>([])
   const [sponsors, setSponsors] = useState<Sponsor[]>([])
   const [selected, setSelected] = useState<SetRow | null>(null)
@@ -140,6 +142,7 @@ export default function MapPage() {
       let accuracyCircle: any = null
 
       map.on('locationfound', (e: any) => {
+        locationLatLngRef.current = e.latlng
         if (locationMarker) locationMarker.remove()
         if (accuracyCircle) accuracyCircle.remove()
 
@@ -209,6 +212,22 @@ export default function MapPage() {
     }
   }, [])
 
+  // Auto-fit map to venue bounds on first data load
+  useEffect(() => {
+    if (!loaded || !leafletMap.current || hasFitRef.current) return
+    if (sets.length === 0) return
+
+    import('leaflet').then(L => {
+      const coords = sets
+        .filter(s => s.venues?.lat && s.venues?.lng)
+        .map(s => [s.venues!.lat!, s.venues!.lng!] as [number, number])
+      if (coords.length === 0) return
+      const bounds = L.latLngBounds(coords)
+      leafletMap.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 16 })
+      hasFitRef.current = true
+    })
+  }, [sets, loaded])
+
   // Update markers when sets or filters change
   useEffect(() => {
     if (!loaded || !leafletMap.current) return
@@ -237,6 +256,7 @@ export default function MapPage() {
         const color = pinColor(topSet)
         const isCancelled = effectiveStatus(topSet) === 'cancelled'
         const isLive = effectiveStatus(topSet) === 'live'
+        const isScheduled = effectiveStatus(topSet) === 'scheduled'
 
         const icon = L.divIcon({
           className: '',
@@ -258,9 +278,9 @@ export default function MapPage() {
                 width: 14px;
                 height: 14px;
                 border-radius: 50%;
-                background: ${color};
+                background: ${isScheduled ? 'transparent' : color};
                 border: 2px solid ${color};
-                box-shadow: ${isCancelled ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
+                box-shadow: ${(isCancelled || isScheduled) ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
                 opacity: ${isCancelled ? '0.55' : '1'};
                 cursor: pointer;
               "></div>
@@ -430,7 +450,7 @@ export default function MapPage() {
           </div>
           <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-            <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#888', display: 'inline-block', flexShrink: 0 }} />
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'transparent', border: '1.5px solid #888', display: 'inline-block', flexShrink: 0 }} />
             scheduled
           </div>
           <span style={{ color: IVORY_BORDER, fontSize: 11 }}>|</span>
@@ -652,10 +672,10 @@ export default function MapPage() {
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
           zIndex: 1000,
-          background: 'rgba(233,232,228,0.96)',
+          background: 'linear-gradient(to right, rgba(255,140,0,0.22) 0%, rgba(255,176,48,0.14) 45%, rgba(233,232,228,0.96) 100%)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderTop: `1px solid ${IVORY_BORDER}`,
+          borderTop: '1px solid rgba(255,140,0,0.18)',
           padding: '10px 16px 14px',
           // fade hint at right edge
           WebkitMaskImage: 'linear-gradient(to right, black 88%, transparent 100%)',
@@ -698,73 +718,123 @@ export default function MapPage() {
           </div>
         </div>
 
+        {/* ── Center-on-me button — above zoom controls ── */}
+        <button
+          onClick={() => {
+            if (!locationLatLngRef.current || !leafletMap.current) return
+            leafletMap.current.setView(locationLatLngRef.current, 17, { animate: true })
+          }}
+          title="Center on my location"
+          style={{
+            position: 'absolute',
+            bottom: 136, right: 14,
+            zIndex: 1001,
+            width: 34, height: 34,
+            borderRadius: '50%',
+            background: IVORY,
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            border: `1px solid ${IVORY_BORDER}`,
+            boxShadow: IVORY_SHADOW,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: 0,
+          }}
+        >
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="8" cy="8" r="3" fill="#619882" />
+            <circle cx="8" cy="8" r="5.5" stroke="#426368" strokeWidth="1.2" fill="none" />
+            <line x1="8" y1="1" x2="8" y2="3.5" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1="8" y1="12.5" x2="8" y2="15" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1="1" y1="8" x2="3.5" y2="8" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+            <line x1="12.5" y1="8" x2="15" y2="8" stroke="#426368" strokeWidth="1.2" strokeLinecap="round" />
+          </svg>
+        </button>
+
         {/* ── Botanical overlay — bottom-left corner ── */}
+        {/* Three layered filled leaves rising from the corner — navy, teal, olive */}
         <svg
-          viewBox="0 0 180 180"
+          viewBox="0 0 220 260"
           xmlns="http://www.w3.org/2000/svg"
           style={{
             position: 'fixed', bottom: 56, left: 0,
-            width: 180, height: 180,
-            pointerEvents: 'none', zIndex: 998, opacity: 0.32,
+            width: 220, height: 260,
+            pointerEvents: 'none', zIndex: 998,
           }}
         >
-          <g stroke="#426368" fill="none" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-            {/* Main stem */}
-            <path d="M 15 178 C 30 155 50 125 65 85" />
-            {/* Left fronds */}
-            <path d="M 24 163 C 8 153 2 138 5 120" />
-            <path d="M 36 145 C 18 133 12 116 16 97" />
-            <path d="M 48 126 C 30 114 25 96 30 78" />
-            <path d="M 58 107 C 44 95 40 78 45 61" />
-            {/* Right fronds */}
-            <path d="M 30 156 C 46 148 52 133 47 116" />
-            <path d="M 42 138 C 58 128 63 113 57 96" />
-            <path d="M 54 118 C 68 108 72 92 65 76" />
-            <path d="M 63 98 C 76 88 78 73 71 57" />
-            {/* Small leaf tips — left side */}
-            <path d="M 5 120 C 0 110 -2 100 3 93" />
-            <path d="M 16 97 C 10 87 9 76 15 70" />
-            <path d="M 30 78 C 24 68 23 58 30 52" />
-            {/* Small leaf tips — right side */}
-            <path d="M 47 116 C 52 106 55 95 50 88" />
-            <path d="M 57 96 C 62 86 64 75 59 68" />
-            <path d="M 65 76 C 70 66 72 55 67 48" />
-          </g>
+          {/* Leaf 1 — large, steep rise, VHDA navy */}
+          <path
+            d="M 8 260 C -5 215 5 160 28 110 C 45 70 62 35 85 15 C 105 35 100 78 85 118 C 68 162 38 210 8 260 Z"
+            fill="#426368" fillOpacity="0.16"
+            stroke="#426368" strokeWidth="1" strokeOpacity="0.28"
+            strokeLinecap="round"
+          />
+          <path d="M 8 260 C 22 205 50 155 85 15" fill="none" stroke="#426368" strokeWidth="0.7" strokeOpacity="0.30" strokeLinecap="round" />
+          <path d="M 28 210 C 8 195 0 175 4 155" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
+          <path d="M 50 170 C 28 154 20 133 25 112" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
+          {/* Leaf 2 — medium, diagonal rise, VHDA teal */}
+          <path
+            d="M 28 260 C 16 228 36 185 65 148 C 90 118 118 90 148 72 C 162 90 155 120 132 148 C 106 178 64 222 28 260 Z"
+            fill="#619882" fillOpacity="0.14"
+            stroke="#619882" strokeWidth="1" strokeOpacity="0.25"
+            strokeLinecap="round"
+          />
+          <path d="M 28 260 C 55 215 100 165 148 72" fill="none" stroke="#619882" strokeWidth="0.7" strokeOpacity="0.28" strokeLinecap="round" />
+          <path d="M 60 218 C 40 200 35 180 42 160" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.20" strokeLinecap="round" />
+          <path d="M 95 178 C 72 160 68 138 76 118" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.20" strokeLinecap="round" />
+          {/* Leaf 3 — wide, low-angle, VHDA olive */}
+          <path
+            d="M 5 260 C 0 242 28 215 68 190 C 108 166 150 148 188 136 C 196 152 185 170 150 185 C 110 202 55 232 5 260 Z"
+            fill="#787342" fillOpacity="0.12"
+            stroke="#787342" strokeWidth="1" strokeOpacity="0.22"
+            strokeLinecap="round"
+          />
+          <path d="M 5 260 C 40 232 110 190 188 136" fill="none" stroke="#787342" strokeWidth="0.7" strokeOpacity="0.25" strokeLinecap="round" />
+          <path d="M 55 240 C 38 224 34 206 42 190" fill="none" stroke="#787342" strokeWidth="0.6" strokeOpacity="0.18" strokeLinecap="round" />
         </svg>
 
-        {/* ── Botanical overlay — bottom-right corner ── */}
+        {/* ── Botanical overlay — bottom-right corner (mirrored, teal-first) ── */}
         <svg
-          viewBox="0 0 180 180"
+          viewBox="0 0 220 260"
           xmlns="http://www.w3.org/2000/svg"
           style={{
             position: 'fixed', bottom: 56, right: 0,
-            width: 180, height: 180,
-            pointerEvents: 'none', zIndex: 998, opacity: 0.32,
+            width: 220, height: 260,
+            pointerEvents: 'none', zIndex: 998,
             transform: 'scaleX(-1)',
           }}
         >
-          <g stroke="#619882" fill="none" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round">
-            {/* Main stem */}
-            <path d="M 15 178 C 30 155 50 125 65 85" />
-            {/* Left fronds */}
-            <path d="M 24 163 C 8 153 2 138 5 120" />
-            <path d="M 36 145 C 18 133 12 116 16 97" />
-            <path d="M 48 126 C 30 114 25 96 30 78" />
-            <path d="M 58 107 C 44 95 40 78 45 61" />
-            {/* Right fronds */}
-            <path d="M 30 156 C 46 148 52 133 47 116" />
-            <path d="M 42 138 C 58 128 63 113 57 96" />
-            <path d="M 54 118 C 68 108 72 92 65 76" />
-            <path d="M 63 98 C 76 88 78 73 71 57" />
-            {/* Small leaf tips — left side */}
-            <path d="M 5 120 C 0 110 -2 100 3 93" />
-            <path d="M 16 97 C 10 87 9 76 15 70" />
-            <path d="M 30 78 C 24 68 23 58 30 52" />
-            {/* Small leaf tips — right side */}
-            <path d="M 47 116 C 52 106 55 95 50 88" />
-            <path d="M 57 96 C 62 86 64 75 59 68" />
-            <path d="M 65 76 C 70 66 72 55 67 48" />
-          </g>
+          {/* Leaf 1 — large, steep rise, VHDA teal */}
+          <path
+            d="M 8 260 C -5 215 5 160 28 110 C 45 70 62 35 85 15 C 105 35 100 78 85 118 C 68 162 38 210 8 260 Z"
+            fill="#619882" fillOpacity="0.16"
+            stroke="#619882" strokeWidth="1" strokeOpacity="0.28"
+            strokeLinecap="round"
+          />
+          <path d="M 8 260 C 22 205 50 155 85 15" fill="none" stroke="#619882" strokeWidth="0.7" strokeOpacity="0.30" strokeLinecap="round" />
+          <path d="M 28 210 C 8 195 0 175 4 155" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
+          <path d="M 50 170 C 28 154 20 133 25 112" fill="none" stroke="#619882" strokeWidth="0.6" strokeOpacity="0.22" strokeLinecap="round" />
+          {/* Leaf 2 — medium, diagonal rise, VHDA navy */}
+          <path
+            d="M 28 260 C 16 228 36 185 65 148 C 90 118 118 90 148 72 C 162 90 155 120 132 148 C 106 178 64 222 28 260 Z"
+            fill="#426368" fillOpacity="0.13"
+            stroke="#426368" strokeWidth="1" strokeOpacity="0.22"
+            strokeLinecap="round"
+          />
+          <path d="M 28 260 C 55 215 100 165 148 72" fill="none" stroke="#426368" strokeWidth="0.7" strokeOpacity="0.25" strokeLinecap="round" />
+          <path d="M 60 218 C 40 200 35 180 42 160" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.18" strokeLinecap="round" />
+          <path d="M 95 178 C 72 160 68 138 76 118" fill="none" stroke="#426368" strokeWidth="0.6" strokeOpacity="0.18" strokeLinecap="round" />
+          {/* Leaf 3 — wide, low-angle, VHDA gold */}
+          <path
+            d="M 5 260 C 0 242 28 215 68 190 C 108 166 150 148 188 136 C 196 152 185 170 150 185 C 110 202 55 232 5 260 Z"
+            fill="#C17C2E" fillOpacity="0.10"
+            stroke="#C17C2E" strokeWidth="1" strokeOpacity="0.20"
+            strokeLinecap="round"
+          />
+          <path d="M 5 260 C 40 232 110 190 188 136" fill="none" stroke="#C17C2E" strokeWidth="0.7" strokeOpacity="0.22" strokeLinecap="round" />
+          <path d="M 55 240 C 38 224 34 206 42 190" fill="none" stroke="#C17C2E" strokeWidth="0.6" strokeOpacity="0.16" strokeLinecap="round" />
         </svg>
 
       </div>
