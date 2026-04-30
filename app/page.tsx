@@ -75,6 +75,20 @@ const VHDA_STRIPE_H = [
   '#1b2424 240px 270px)',
 ].join(' ')
 
+// Same palette, vertical — for the side ribbons
+const VHDA_STRIPE_V = [
+  'repeating-linear-gradient(180deg,',
+  '#81817f   0px  30px,',
+  '#619cab  30px  60px,',
+  '#c25534  60px  90px,',
+  '#619882  90px 120px,',
+  '#7A525B 120px 150px,',
+  '#C17C2E 150px 180px,',
+  '#426368 180px 210px,',
+  '#787342 210px 240px,',
+  '#1b2424 240px 270px)',
+].join(' ')
+
 // VHDA design tokens
 const IVORY = 'rgba(233,232,228,0.94)'
 const IVORY_BORDER = 'rgba(66,99,104,0.14)'
@@ -464,39 +478,39 @@ export default function MapPage() {
           <div style={{
             background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
             borderRadius: 10,
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '12px 16px',
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '14px 20px',
           }}>
             {/* PULSED brand — links to pulsedapp.live */}
             <a
               href="https://pulsedapp.live"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: 7, textDecoration: 'none' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}
             >
               <span style={{
-                width: 8, height: 8, borderRadius: '50%',
+                width: 9, height: 9, borderRadius: '50%',
                 background: '#ff8c00', display: 'inline-block',
                 boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
               }} />
-              <span style={{ color: '#ff8c00', fontSize: 14, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
+              <span style={{ color: '#ff8c00', fontSize: 15, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
                 PULSED
               </span>
             </a>
             {/* Divider */}
-            <span style={{ width: 1, height: 28, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
-            {/* Porchfest logo — links to VHDA site */}
+            <span style={{ width: 1, height: 50, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
+            {/* Porchfest logo — links to VHDA site. flexShrink:0 + width:auto preserves native aspect ratio. */}
             <a
               href="https://vhda.org"
               target="_blank"
               rel="noopener noreferrer"
-              style={{ display: 'block', lineHeight: 0 }}
+              style={{ display: 'block', lineHeight: 0, flexShrink: 0 }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/pf26-logo-navy.png"
                 alt="Virginia Highland Porchfest 2026"
-                style={{ height: 34, width: 'auto', opacity: 0.85, display: 'block' }}
+                style={{ height: 50, width: 'auto', opacity: 0.9, display: 'block' }}
               />
             </a>
           </div>
@@ -522,7 +536,7 @@ export default function MapPage() {
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(160px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(204px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -650,7 +664,7 @@ export default function MapPage() {
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(160px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(204px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -731,7 +745,7 @@ export default function MapPage() {
         {/* ── "Find a Pulse" pill + live count ── */}
         <div style={{
           position: 'absolute',
-          bottom: 'calc(104px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(148px + env(safe-area-inset-bottom, 0px))',
           left: '50%',
           transform: 'translateX(-50%)',
           zIndex: 1001,
@@ -801,14 +815,38 @@ export default function MapPage() {
           </span>
         </div>
 
+        {/* ── VHDA side ribbons — left and right edges, full height, z998 so filter bar + header sit on top ── */}
+        <div style={{
+          position: 'fixed', top: 0, bottom: 0, left: 0,
+          width: 6,
+          background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
+          zIndex: 998, pointerEvents: 'none',
+        }} />
+        <div style={{
+          position: 'fixed', top: 0, bottom: 0, right: 0,
+          width: 6,
+          background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
+          zIndex: 998, pointerEvents: 'none',
+        }} />
+
+        {/* ── Transparent-to-orange gradient halo — raises the visual start of the filter bar ── */}
+        <div style={{
+          position: 'absolute',
+          bottom: 'calc(92px + env(safe-area-inset-bottom, 0px))',
+          left: 0, right: 0,
+          height: 60,
+          background: 'linear-gradient(to bottom, transparent 0%, rgba(255,140,0,0.88) 100%)',
+          zIndex: 999,
+          pointerEvents: 'none',
+        }} />
+
         {/* ── Filter bar — Genre + Time rows, pinned to bottom ── */}
         <div style={{
           position: 'absolute',
           bottom: 0, left: 0, right: 0,
           zIndex: 1000,
           background: 'linear-gradient(to right, #ff8c00 0%, #ffd060 100%)',
-          borderTop: '1px solid rgba(255,140,0,0.35)',
-          paddingTop: 10,
+          paddingTop: 14,
           paddingLeft: 14,
           paddingRight: 14,
           /* Push content above iPhone home indicator */
@@ -932,7 +970,7 @@ export default function MapPage() {
         <div style={{
           position: 'absolute',
           right: 14,
-          bottom: 'calc(158px + env(safe-area-inset-bottom, 0px))',
+          bottom: 'calc(200px + env(safe-area-inset-bottom, 0px))',
           zIndex: 1001,
           display: 'flex',
           flexDirection: 'column',
