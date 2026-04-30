@@ -61,6 +61,21 @@ function effectiveStatus(set: SetRow): SetRow['status'] {
   return set.status
 }
 
+// VHDA 9-color stripe gradient strings — used for page-edge ribbon strips
+const VHDA_STRIPE_H = [
+  'repeating-linear-gradient(90deg,',
+  '#81817f   0px  30px,',
+  '#619cab  30px  60px,',
+  '#c25534  60px  90px,',
+  '#619882  90px 120px,',
+  '#7A525B 120px 150px,',
+  '#C17C2E 150px 180px,',
+  '#426368 180px 210px,',
+  '#787342 210px 240px,',
+  '#1b2424 240px 270px)',
+].join(' ')
+const VHDA_STRIPE_V = VHDA_STRIPE_H.replace('90deg', '180deg')
+
 // VHDA design tokens
 const IVORY = 'rgba(233,232,228,0.94)'
 const IVORY_BORDER = 'rgba(66,99,104,0.14)'
@@ -436,8 +451,35 @@ export default function MapPage() {
           pointerEvents: 'none',
         }} />
 
-        {/* ── Header — top left ── */}
+        {/* ── VHDA color ribbon — page edge strips ── */}
+        {/* 3px animated stripes around the viewport edges; pointer-events off */}
         <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, height: 3,
+          zIndex: 1998, pointerEvents: 'none',
+          background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+          animation: 'ribbonScroll 10s linear infinite',
+        }} />
+        <div style={{
+          position: 'fixed', bottom: 0, left: 0, right: 0, height: 3,
+          zIndex: 1998, pointerEvents: 'none',
+          background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+          animation: 'ribbonScroll 10s linear infinite',
+        }} />
+        <div style={{
+          position: 'fixed', top: 0, left: 0, bottom: 0, width: 3,
+          zIndex: 1998, pointerEvents: 'none',
+          background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
+          animation: 'ribbonScrollV 10s linear infinite',
+        }} />
+        <div style={{
+          position: 'fixed', top: 0, right: 0, bottom: 0, width: 3,
+          zIndex: 1998, pointerEvents: 'none',
+          background: VHDA_STRIPE_V, backgroundSize: '100% 270px',
+          animation: 'ribbonScrollV 10s linear infinite',
+        }} />
+
+        {/* ── Header — top left ── */}
+        <div className="vhda-ribbon" style={{
           position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 14px)', left: 14, zIndex: 1000,
           ...panelBase,
           display: 'flex', alignItems: 'center', gap: 12,
@@ -466,7 +508,7 @@ export default function MapPage() {
         </div>
 
         {/* ── Legend — top left, below header ── */}
-        <div style={{
+        <div className="vhda-ribbon" style={{
           position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 76px)', left: 14, zIndex: 1000,
           ...panelBase,
           borderRadius: 8,
@@ -497,7 +539,7 @@ export default function MapPage() {
         </div>
 
         {/* ── Set count — top right ── */}
-        <div style={{
+        <div className="vhda-ribbon" style={{
           position: 'absolute', top: 'calc(env(safe-area-inset-top, 0px) + 14px)', right: 14, zIndex: 1000,
           ...panelBase,
           padding: '10px 14px',
@@ -729,48 +771,55 @@ export default function MapPage() {
         )}
 
         {/* ── "Find a Pulse" pill — floats above the gradient bar ── */}
-        <button
-          onClick={() => setFilterLive(f => !f)}
+        {/* Ribbon wrapper: provides the animated VHDA stripe border */}
+        <div
+          className="vhda-ribbon vhda-ribbon-fast"
           style={{
             position: 'absolute',
             bottom: 104,
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1001,
+            borderRadius: 26,
             display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            background: filterLive
-              ? 'rgba(20,20,20,0.88)'
-              : 'rgba(255,255,255,0.95)',
-            border: filterLive
-              ? '1px solid rgba(255,255,255,0.18)'
-              : '1px solid rgba(255,140,0,0.25)',
-            color: filterLive ? '#fff' : '#1b2424',
-            borderRadius: 24,
-            padding: '10px 22px',
-            cursor: 'pointer',
-            fontFamily: 'inherit',
-            fontSize: 12,
-            fontWeight: filterLive ? 700 : 500,
-            letterSpacing: '0.06em',
-            whiteSpace: 'nowrap',
-            boxShadow: filterLive
-              ? '0 4px 18px rgba(0,0,0,0.35)'
-              : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
-            backdropFilter: 'blur(14px)',
-            WebkitBackdropFilter: 'blur(14px)',
-            transition: 'all 0.18s ease',
           }}
         >
-          <span style={{
-            width: 7, height: 7, borderRadius: '50%',
-            background: filterLive ? '#ffd060' : '#ff8c00',
-            display: 'inline-block', flexShrink: 0,
-            animation: 'pulseDot 1.6s ease-in-out infinite',
-          }} />
-          find a pulse · live now
-        </button>
+          <button
+            onClick={() => setFilterLive(f => !f)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              background: filterLive
+                ? 'rgba(20,20,20,0.88)'
+                : 'rgba(255,255,255,0.95)',
+              border: 'none',
+              color: filterLive ? '#fff' : '#1b2424',
+              borderRadius: 24,
+              padding: '10px 22px',
+              cursor: 'pointer',
+              fontFamily: 'inherit',
+              fontSize: 12,
+              fontWeight: filterLive ? 700 : 500,
+              letterSpacing: '0.06em',
+              whiteSpace: 'nowrap',
+              boxShadow: filterLive
+                ? '0 4px 18px rgba(0,0,0,0.35)'
+                : '0 3px 14px rgba(255,140,0,0.22), 0 1px 4px rgba(0,0,0,0.10)',
+              backdropFilter: 'blur(14px)',
+              WebkitBackdropFilter: 'blur(14px)',
+              transition: 'all 0.18s ease',
+            }}
+          >
+            <span style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: filterLive ? '#ffd060' : '#ff8c00',
+              display: 'inline-block', flexShrink: 0,
+              animation: 'pulseDot 1.6s ease-in-out infinite',
+            }} />
+            find a pulse · live now
+          </button>
+        </div>
 
         {/* ── Filter bar — Genre + Time rows, pinned to bottom ── */}
         <div style={{
