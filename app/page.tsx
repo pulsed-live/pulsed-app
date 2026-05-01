@@ -663,7 +663,7 @@ export default function MapPage() {
         {selected && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(202px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(226px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -721,7 +721,7 @@ export default function MapPage() {
               )}
               <button
                 onClick={() => setSelected(null)}
-                style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
+                style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '8px 10px', margin: '-8px -10px' }}
               >
                 ✕
               </button>
@@ -791,7 +791,7 @@ export default function MapPage() {
         {selectedSponsor && (
           <div style={{
             position: 'absolute',
-            bottom: 'calc(202px + env(safe-area-inset-bottom, 0px))',
+            bottom: 'calc(226px + env(safe-area-inset-bottom, 0px))',
             left: '50%',
             transform: 'translateX(-50%)',
             zIndex: 1000,
@@ -819,7 +819,7 @@ export default function MapPage() {
               </span>
               <button
                 onClick={() => setSelectedSponsor(null)}
-                style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: 0 }}
+                style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '8px 10px', margin: '-8px -10px' }}
               >
                 ✕
               </button>
@@ -895,9 +895,10 @@ export default function MapPage() {
               onClick={() => setFilterLive(f => !f)}
               style={{
                 display: 'flex',
+                flexDirection: 'column',
                 alignItems: 'center',
                 justifyContent: 'center',
-                gap: 8,
+                gap: 4,
                 width: '100%',
                 minHeight: 64,
                 background: filterLive
@@ -912,29 +913,26 @@ export default function MapPage() {
                 fontSize: 12,
                 fontWeight: filterLive ? 700 : 500,
                 letterSpacing: '0.06em',
-                whiteSpace: 'nowrap',
                 backdropFilter: 'blur(14px)',
                 WebkitBackdropFilter: 'blur(14px)',
                 transition: 'background 0.18s ease, color 0.18s ease',
                 boxSizing: 'border-box' as const,
               }}
             >
-              <span style={{
-                width: 7, height: 7, borderRadius: '50%',
-                background: filterLive ? '#ffd060' : '#ff8c00',
-                display: 'inline-block', flexShrink: 0,
-                animation: 'pulseDot 1.6s ease-in-out infinite',
-              }} />
-              find a pulse
-              <span style={{
-                width: 1, height: 12,
-                background: filterLive ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
-                display: 'inline-block', flexShrink: 0,
-                borderRadius: 1,
-              }} />
+              {/* Row 1: dot + label */}
+              <span style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: filterLive ? '#ffd060' : '#ff8c00',
+                  display: 'inline-block', flexShrink: 0,
+                  animation: 'pulseDot 1.6s ease-in-out infinite',
+                }} />
+                find a pulse
+              </span>
+              {/* Row 2: count */}
               <span style={{
                 fontSize: 10,
-                color: filterLive ? 'rgba(255,255,255,0.7)' : (livePinCount > 0 ? '#ff8c00' : 'rgba(0,0,0,0.4)'),
+                color: filterLive ? 'rgba(255,255,255,0.6)' : (livePinCount > 0 ? '#ff8c00' : 'rgba(0,0,0,0.4)'),
                 fontWeight: livePinCount > 0 && !filterLive ? 600 : 400,
                 letterSpacing: '0.05em',
               }}>
