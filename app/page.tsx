@@ -491,7 +491,7 @@ export default function MapPage() {
         .filter-scroll { -ms-overflow-style: none; scrollbar-width: none; }
       `}</style>
 
-      <div style={{ position: 'relative', width: '100vw', height: '100vh', background: '#E9E8E4', fontFamily: "'JetBrains Mono', monospace" }}>
+      <div style={{ position: 'relative', width: '100vw', height: '100dvh', background: '#E9E8E4', fontFamily: "'JetBrains Mono', monospace" }}>
 
         {/* Map */}
         <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
@@ -536,13 +536,13 @@ export default function MapPage() {
                 ].join(', '),
               }}>
                 <span style={{
-                  width: 14, height: 14, borderRadius: '50%',
+                  width: 12, height: 12, borderRadius: '50%',
                   background: '#ff8c00', display: 'inline-block', flexShrink: 0,
                   boxShadow: '0 0 22px #ff8c00, 0 0 44px #ff8c0066',
                 }} />
                 <span style={{
-                  color: '#ff8c00', fontSize: 30,
-                  letterSpacing: '0.18em', fontWeight: 700,
+                  color: '#ff8c00', fontSize: 26,
+                  letterSpacing: '0.16em', fontWeight: 700,
                   fontFamily: "'JetBrains Mono', monospace",
                   textShadow: '0 0 30px #ff8c0077',
                 }}>
@@ -563,7 +563,7 @@ export default function MapPage() {
               }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src="/pf26-logo-navy.png" alt="Virginia Highland Porchfest 2026"
-                  style={{ height: 52, width: 'auto', display: 'block',
+                  style={{ height: 44, width: 'auto', maxWidth: 160, objectFit: 'contain', display: 'block',
                     filter: 'brightness(0) invert(1)', opacity: 0.92 }} />
               </div>
             </div>
@@ -616,11 +616,11 @@ export default function MapPage() {
               style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}
             >
               <span style={{
-                width: 9, height: 9, borderRadius: '50%',
+                width: 8, height: 8, borderRadius: '50%',
                 background: '#ff8c00', display: 'inline-block',
                 boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
               }} />
-              <span style={{ color: '#ff8c00', fontSize: 15, letterSpacing: '0.14em', fontWeight: 700, lineHeight: 1 }}>
+              <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.12em', fontWeight: 700, lineHeight: 1 }}>
                 PULSED
               </span>
             </a>
@@ -637,7 +637,7 @@ export default function MapPage() {
               <img
                 src="/pf26-logo-navy.png"
                 alt="Virginia Highland Porchfest 2026"
-                style={{ height: 40, width: 'auto', opacity: 0.9, display: 'block' }}
+                style={{ height: 40, width: 'auto', maxWidth: 200, objectFit: 'contain', opacity: 0.9, display: 'block' }}
               />
             </a>
           </div>
