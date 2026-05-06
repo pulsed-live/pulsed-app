@@ -353,9 +353,12 @@ export default function MapPage() {
                 cursor: pointer;
                 display: flex; align-items: center; justify-content: center;
               ">${isMulti ? `<span style="
-                font-size: 9px; font-weight: 700; font-family: monospace;
-                color: #e9e8e4; line-height: 1; pointer-events: none;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+                font-size: 9px; font-weight: 800; font-family: monospace;
+                line-height: 1; pointer-events: none;
+                background: linear-gradient(to bottom, #ff8c00 0%, #ffd060 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
               ">${venueSets.length}</span>` : ''}</div>
             </div>
           `,
