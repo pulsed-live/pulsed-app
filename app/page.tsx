@@ -322,15 +322,19 @@ export default function MapPage() {
         const isLive = effectiveStatus(topSet) === 'live'
         const isScheduled = effectiveStatus(topSet) === 'scheduled'
 
+        const isMulti = venueSets.length > 1
+        const pinSize = isMulti ? 18 : 14
+        const pinHalf = pinSize / 2
+
         const icon = L.divIcon({
           className: '',
           html: `
-            <div style="position: relative; width: 14px; height: 14px; overflow: visible;">
+            <div style="position: relative; width: ${pinSize}px; height: ${pinSize}px; overflow: visible;">
               ${isLive ? `
               <div style="
                 position: absolute;
                 top: 0; left: 0;
-                width: 14px; height: 14px;
+                width: ${pinSize}px; height: ${pinSize}px;
                 border-radius: 50%;
                 border: 2px solid ${color};
                 animation: liveRipple 2s ease-out infinite;
@@ -339,29 +343,24 @@ export default function MapPage() {
               <div style="
                 position: relative;
                 z-index: 1;
-                width: 14px;
-                height: 14px;
+                width: ${pinSize}px;
+                height: ${pinSize}px;
                 border-radius: 50%;
                 background: ${isScheduled ? 'rgba(136,136,136,0.20)' : color};
                 border: 2px solid ${color};
                 box-shadow: ${(isCancelled || isScheduled) ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
                 opacity: ${isCancelled ? '0.55' : '1'};
                 cursor: pointer;
-              "></div>
-              ${venueSets.length > 1 ? `
-              <div style="
-                position: absolute; top: -5px; right: -5px;
-                width: 11px; height: 11px; border-radius: 50%;
-                background: ${color}; border: 1.5px solid #e9e8e4;
-                font-size: 7px; font-weight: 700;
                 display: flex; align-items: center; justify-content: center;
-                color: #e9e8e4; font-family: monospace; line-height: 1;
-                pointer-events: none; z-index: 2;
-              ">${venueSets.length}</div>` : ''}
+              ">${isMulti ? `<span style="
+                font-size: 9px; font-weight: 700; font-family: monospace;
+                color: #e9e8e4; line-height: 1; pointer-events: none;
+                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+              ">${venueSets.length}</span>` : ''}</div>
             </div>
           `,
-          iconSize: [14, 14],
-          iconAnchor: [7, 7],
+          iconSize: [pinSize, pinSize],
+          iconAnchor: [pinHalf, pinHalf],
         })
 
         const marker = L.marker([venue.lat, venue.lng], { icon })
