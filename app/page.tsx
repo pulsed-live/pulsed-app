@@ -104,6 +104,7 @@ export default function MapPage() {
   const [sets, setSets] = useState<SetRow[]>([])
   const [sponsors, setSponsors] = useState<Sponsor[]>([])
   const [selected, setSelected] = useState<SetRow | null>(null)
+  const [selectedVenueSets, setSelectedVenueSets] = useState<SetRow[]>([])
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null)
   const [loaded, setLoaded] = useState(false)
   const [filterLive, setFilterLive] = useState(false)
@@ -135,6 +136,11 @@ export default function MapPage() {
     if (data) {
       setSets(data)
       setSelected(prev => prev ? (data.find(s => s.id === prev.id) ?? prev) : null)
+      setSelectedVenueSets(prev => {
+        if (!prev.length) return prev
+        const venueId = prev[0].venue_id
+        return data.filter(s => s.venue_id === venueId)
+      })
     }
   }
 
@@ -307,7 +313,7 @@ export default function MapPage() {
         if (!venue.lat || !venue.lng) return
 
         const statusPriority = ['live', 'running_late', 'scheduled', 'cancelled']
-        const topSet = venueSets.sort((a, b) =>
+        const topSet = [...venueSets].sort((a, b) =>
           statusPriority.indexOf(effectiveStatus(a)) - statusPriority.indexOf(effectiveStatus(b))
         )[0]
 
@@ -342,6 +348,16 @@ export default function MapPage() {
                 opacity: ${isCancelled ? '0.55' : '1'};
                 cursor: pointer;
               "></div>
+              ${venueSets.length > 1 ? `
+              <div style="
+                position: absolute; top: -5px; right: -5px;
+                width: 11px; height: 11px; border-radius: 50%;
+                background: ${color}; border: 1.5px solid #e9e8e4;
+                font-size: 7px; font-weight: 700;
+                display: flex; align-items: center; justify-content: center;
+                color: #e9e8e4; font-family: monospace; line-height: 1;
+                pointer-events: none; z-index: 2;
+              ">${venueSets.length}</div>` : ''}
             </div>
           `,
           iconSize: [14, 14],
@@ -350,7 +366,7 @@ export default function MapPage() {
 
         const marker = L.marker([venue.lat, venue.lng], { icon })
           .addTo(leafletMap.current)
-          .on('click', () => { setSelected(venueSets[0]); setSelectedSponsor(null) })
+          .on('click', () => { setSelected(topSet); setSelectedVenueSets(venueSets); setSelectedSponsor(null) })
 
         markersRef.current.push(marker)
       })
@@ -720,7 +736,7 @@ export default function MapPage() {
                 </span>
               )}
               <button
-                onClick={() => setSelected(null)}
+                onClick={() => { setSelected(null); setSelectedVenueSets([]) }}
                 style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '8px 10px', margin: '-8px -10px' }}
               >
                 ✕
@@ -739,7 +755,7 @@ export default function MapPage() {
               {selected.venues?.address}
             </div>
 
-            <div style={{ fontSize: 12, color: NAVY_TEXT, marginBottom: selected.acts?.link ? 14 : 0 }}>
+            <div style={{ fontSize: 12, color: NAVY_TEXT, marginBottom: selectedVenueSets.length > 1 ? 10 : (selected.acts?.link ? 14 : 0) }}>
               {new Date(selected.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
               {' — '}
               {new Date(selected.ends_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -748,7 +764,48 @@ export default function MapPage() {
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: 8, marginTop: 14, flexWrap: 'wrap' }}>
+            {/* ── Multi-act schedule ── */}
+            {selectedVenueSets.length > 1 && (
+              <div style={{ borderTop: `1px solid ${IVORY_BORDER}`, paddingTop: 10, marginBottom: 14 }}>
+                <div style={{ fontSize: 10, letterSpacing: '0.06em', color: NAVY_TEXT, marginBottom: 8, fontFamily: "'JetBrains Mono', monospace" }}>
+                  all acts today
+                </div>
+                {[...selectedVenueSets]
+                  .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+                  .map(s => {
+                    const isActive = s.id === selected?.id
+                    const sc = pinColor(s)
+                    return (
+                      <div
+                        key={s.id}
+                        onClick={() => !isActive && setSelected(s)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 8,
+                          padding: '5px 0',
+                          cursor: isActive ? 'default' : 'pointer',
+                          opacity: isActive ? 1 : 0.55,
+                          borderBottom: `1px solid ${IVORY_BORDER}`,
+                        }}
+                      >
+                        <span style={{ width: 6, height: 6, borderRadius: '50%', background: sc, flexShrink: 0 }} />
+                        <span style={{
+                          fontSize: 11, fontFamily: "'Montserrat', sans-serif",
+                          fontWeight: isActive ? 600 : 400, color: '#1b2424',
+                          flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>
+                          {s.acts?.name}
+                        </span>
+                        <span style={{ fontSize: 10, color: NAVY_TEXT, flexShrink: 0, whiteSpace: 'nowrap' }}>
+                          {new Date(s.starts_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                        </span>
+                      </div>
+                    )
+                  })
+                }
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: 8, marginTop: selectedVenueSets.length > 1 ? 0 : 14, flexWrap: 'wrap' }}>
               {selected.acts?.link && (
                 <a
                   href={selected.acts.link.startsWith('http') ? selected.acts.link : `https://${selected.acts.link}`}
