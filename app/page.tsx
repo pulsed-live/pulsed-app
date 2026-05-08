@@ -822,7 +822,9 @@ export default function MapPage() {
             </div>
 
             <div style={{ fontSize: 11, color: NAVY_TEXT, opacity: 0.7, marginBottom: 10 }}>
-              {selected.venues?.address}
+              {selected.venues?.name && selected.venues.name !== selected.venues.address
+                ? selected.venues.name
+                : selected.venues?.address}
             </div>
 
             <div style={{ fontSize: 12, color: NAVY_TEXT, marginBottom: selectedVenueSets.length > 1 ? 10 : (selected.acts?.link ? 14 : 0) }}>
