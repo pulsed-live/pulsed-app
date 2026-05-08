@@ -211,8 +211,8 @@ export default function MapPage() {
       })
 
       const map = L.map(mapRef.current!, {
-        center: [33.7838, -84.3647],
-        zoom: 16,
+        center: [33.7788, -84.3590],
+        zoom: 15,
         zoomControl: false,
       })
 
@@ -301,21 +301,7 @@ export default function MapPage() {
     }
   }, [])
 
-  // Auto-fit map to venue bounds on first data load
-  useEffect(() => {
-    if (!loaded || !leafletMap.current || hasFitRef.current) return
-    if (sets.length === 0) return
-
-    import('leaflet').then(L => {
-      const coords = sets
-        .filter(s => s.venues?.lat && s.venues?.lng)
-        .map(s => [s.venues!.lat!, s.venues!.lng!] as [number, number])
-      if (coords.length === 0) return
-      const bounds = L.latLngBounds(coords)
-      leafletMap.current.fitBounds(bounds, { padding: [60, 60], maxZoom: 17 })
-      hasFitRef.current = true
-    })
-  }, [sets, loaded])
+  // Auto-fit removed — map opens centered on Va-Hi at zoom 15
 
   // Update markers when sets or filters change
   useEffect(() => {
