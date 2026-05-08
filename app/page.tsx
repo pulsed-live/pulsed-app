@@ -377,9 +377,9 @@ export default function MapPage() {
                 width: ${pinSize}px;
                 height: ${pinSize}px;
                 border-radius: 50%;
-                background: ${color};
+                background: ${isLiveOrLate ? color : color + '2e'};
                 border: 2px solid ${color};
-                box-shadow: ${isCancelled ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
+                box-shadow: ${isLiveOrLate ? `0 0 10px ${color}88, 0 0 20px ${color}44` : 'none'};
                 opacity: ${isCancelled ? '0.55' : '1'};
                 cursor: pointer;
                 display: flex; align-items: center; justify-content: center;
