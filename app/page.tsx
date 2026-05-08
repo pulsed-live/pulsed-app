@@ -35,8 +35,26 @@ function slotColor(set: SetRow): string {
 
 function pinColor(set: SetRow): string {
   const es = effectiveStatus(set)
-  if (es === 'live' || es === 'running_late') return slotColor(set)
-  return STATUS_COLORS[es] ?? '#888'
+  if (es === 'cancelled') return STATUS_COLORS['cancelled']
+  return slotColor(set)
+}
+
+// For multi-act venues: color of the live/running_late act, or next upcoming,
+// or last act if all are done.
+function nextUpColor(venueSets: SetRow[]): string {
+  const liveSet = venueSets.find(s => {
+    const es = effectiveStatus(s)
+    return es === 'live' || es === 'running_late'
+  })
+  if (liveSet) return slotColor(liveSet)
+  const now = Date.now()
+  const upcoming = [...venueSets]
+    .filter(s => effectiveStatus(s) !== 'cancelled')
+    .sort((a, b) => new Date(a.starts_at).getTime() - new Date(b.starts_at).getTime())
+    .find(s => new Date(s.ends_at).getTime() > now)
+  if (upcoming) return slotColor(upcoming)
+  const last = [...venueSets].reverse().find(s => effectiveStatus(s) !== 'cancelled')
+  return last ? slotColor(last) : slotColor(venueSets[0])
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -110,6 +128,7 @@ export default function MapPage() {
   const [filterLive, setFilterLive] = useState(false)
   const [filterGenre, setFilterGenre] = useState<string | null>(null)
   const [filterTime, setFilterTime] = useState<number | null>(null)
+  const [searchQuery, setSearchQuery] = useState('')
   // Landing animation — mount-gated so SSR and client start from the same state.
   // `mounted` gates the overlay to client-only; `animDone` checks sessionStorage
   // so repeat visitors within a tab session skip it entirely.
@@ -124,6 +143,12 @@ export default function MapPage() {
     if (filterLive && effectiveStatus(set) !== 'live') return false
     if (filterGenre && set.acts?.genre !== filterGenre) return false
     if (filterTime !== null && new Date(set.starts_at).getUTCHours() !== filterTime) return false
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase()
+      const actName = (set.acts?.name ?? '').toLowerCase()
+      const address = (set.venues?.address ?? set.venues?.name ?? '').toLowerCase()
+      if (!actName.includes(q) && !address.includes(q)) return false
+    }
     return true
   })
 
@@ -154,7 +179,7 @@ export default function MapPage() {
     if (!selected) return
     const stillVisible = filteredSets.some(s => s.id === selected.id)
     if (!stillVisible) setSelected(null)
-  }, [filterLive, filterGenre, filterTime])
+  }, [filterLive, filterGenre, filterTime, searchQuery])
 
   // On mount: always play the animation on every page load
   useEffect(() => {
@@ -317,20 +342,26 @@ export default function MapPage() {
           statusPriority.indexOf(effectiveStatus(a)) - statusPriority.indexOf(effectiveStatus(b))
         )[0]
 
-        const color = pinColor(topSet)
-        const isCancelled = effectiveStatus(topSet) === 'cancelled'
-        const isLive = effectiveStatus(topSet) === 'live'
-        const isScheduled = effectiveStatus(topSet) === 'scheduled'
+        const topStatus = effectiveStatus(topSet)
+        const isCancelled = topStatus === 'cancelled'
+        const isLiveOrLate = topStatus === 'live' || topStatus === 'running_late'
 
         const isMulti = venueSets.length > 1
         const pinSize = isMulti ? 18 : 14
         const pinHalf = pinSize / 2
 
+        // Multi-act: use next-up color so pin reflects who's playing now/next
+        const color = isCancelled
+          ? STATUS_COLORS['cancelled']
+          : isMulti
+            ? nextUpColor(venueSets)
+            : slotColor(topSet)
+
         const icon = L.divIcon({
           className: '',
           html: `
             <div style="position: relative; width: ${pinSize}px; height: ${pinSize}px; overflow: visible;">
-              ${isLive ? `
+              ${isLiveOrLate ? `
               <div style="
                 position: absolute;
                 top: 0; left: 0;
@@ -346,9 +377,9 @@ export default function MapPage() {
                 width: ${pinSize}px;
                 height: ${pinSize}px;
                 border-radius: 50%;
-                background: ${isScheduled ? 'rgba(136,136,136,0.20)' : color};
+                background: ${color};
                 border: 2px solid ${color};
-                box-shadow: ${(isCancelled || isScheduled) ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
+                box-shadow: ${isCancelled ? 'none' : `0 0 10px ${color}88, 0 0 20px ${color}44`};
                 opacity: ${isCancelled ? '0.55' : '1'};
                 cursor: pointer;
                 display: flex; align-items: center; justify-content: center;
@@ -601,60 +632,114 @@ export default function MapPage() {
           pointerEvents: 'none',
         }} />
 
-        {/* ── Header — centered top ── */}
-        {/* position:fixed so env(safe-area-inset-top) resolves reliably vs viewport on all iOS devices */}
-        {/* maxWidth prevents the card from overflowing narrow screens while keeping it centred */}
+        {/* ── Header + Search — stacked column, centered top ── */}
         <div style={{
           position: 'fixed',
           top: 'calc(env(safe-area-inset-top, 0px) + 14px)',
-          left: 0, right: 0, margin: '0 auto',
-          width: 'fit-content',
+          left: 0, right: 0,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
           zIndex: 1000,
-          borderRadius: 13, padding: 3,
-          background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
-          boxShadow: IVORY_SHADOW,
-          maxWidth: 'calc(100vw - 28px)',
-          boxSizing: 'border-box',
+          pointerEvents: 'none', // let map clicks pass through the gap
         }}>
+          {/* Logo card */}
           <div style={{
-            background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
-            borderRadius: 10,
-            display: 'flex', alignItems: 'center', gap: 12,
-            padding: '12px 18px',
-            overflow: 'hidden',
+            pointerEvents: 'auto',
+            borderRadius: 13, padding: 3,
+            background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+            boxShadow: IVORY_SHADOW,
+            maxWidth: 'calc(100vw - 28px)',
+            boxSizing: 'border-box',
           }}>
-            {/* PULSED brand — links to pulsedapp.live */}
-            <a
-              href="https://pulsedapp.live"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}
-            >
-              <span style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: '#ff8c00', display: 'inline-block',
-                boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
-              }} />
-              <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.12em', fontWeight: 700, lineHeight: 1 }}>
-                PULSED
-              </span>
-            </a>
-            {/* Divider */}
-            <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
-            {/* Porchfest logo — links to VHDA site */}
-            <a
-              href="https://www.virginiahighlanddistrict.com/porchfest"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ display: 'block', lineHeight: 0, flexShrink: 0 }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/pf26-logo-navy.png"
-                alt="Virginia Highland Porchfest 2026"
-                style={{ height: 40, width: 'auto', maxWidth: 200, objectFit: 'contain', opacity: 0.9, display: 'block' }}
-              />
-            </a>
+            <div style={{
+              background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+              borderRadius: 10,
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '12px 18px',
+              overflow: 'hidden',
+            }}>
+              {/* PULSED brand — links to pulsedapp.live */}
+              <a
+                href="https://pulsedapp.live"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'flex', alignItems: 'center', gap: 8, textDecoration: 'none', flexShrink: 0 }}
+              >
+                <span style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: '#ff8c00', display: 'inline-block',
+                  boxShadow: '0 0 10px #ff8c00cc', flexShrink: 0,
+                }} />
+                <span style={{ color: '#ff8c00', fontSize: 13, letterSpacing: '0.12em', fontWeight: 700, lineHeight: 1 }}>
+                  PULSED
+                </span>
+              </a>
+              {/* Divider */}
+              <span style={{ width: 1, height: 40, background: 'rgba(66,99,104,0.18)', flexShrink: 0, display: 'block' }} />
+              {/* Porchfest logo — links to VHDA site */}
+              <a
+                href="https://www.virginiahighlanddistrict.com/porchfest"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ display: 'block', lineHeight: 0, flexShrink: 0 }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/pf26-logo-navy.png"
+                  alt="Virginia Highland Porchfest 2026"
+                  style={{ height: 40, width: 'auto', maxWidth: 200, objectFit: 'contain', opacity: 0.9, display: 'block' }}
+                />
+              </a>
+            </div>
+          </div>
+
+          {/* Search bar */}
+          <div style={{
+            pointerEvents: 'auto',
+            width: 'calc(100vw - 28px)',
+            maxWidth: 380,
+          }}>
+            <div style={{
+              borderRadius: 10, padding: 2,
+              background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+              boxShadow: IVORY_SHADOW,
+            }}>
+              <div style={{
+                background: IVORY, backdropFilter: 'blur(14px)', WebkitBackdropFilter: 'blur(14px)',
+                borderRadius: 8,
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '8px 14px',
+              }}>
+                <svg width="13" height="13" viewBox="0 0 13 13" fill="none" style={{ flexShrink: 0, opacity: 0.45 }}>
+                  <circle cx="5.5" cy="5.5" r="4.5" stroke="rgba(66,99,104,0.9)" strokeWidth="1.5"/>
+                  <line x1="9" y1="9" x2="12" y2="12" stroke="rgba(66,99,104,0.9)" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                <input
+                  type="text"
+                  placeholder="search acts or address…"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  style={{
+                    flex: 1,
+                    border: 'none',
+                    outline: 'none',
+                    background: 'transparent',
+                    fontSize: 12,
+                    fontFamily: "'JetBrains Mono', monospace",
+                    color: 'rgba(66,99,104,0.9)',
+                    letterSpacing: '0.02em',
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      border: 'none', background: 'none', padding: 0, cursor: 'pointer',
+                      color: 'rgba(66,99,104,0.45)', fontSize: 14, lineHeight: 1, flexShrink: 0,
+                    }}
+                  >×</button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
 
