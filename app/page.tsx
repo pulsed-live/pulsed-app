@@ -209,7 +209,7 @@ export default function MapPage() {
   }, [])
 
   async function handleContactSubmit() {
-    if (!contactPhone.trim()) return
+    if (!contactPhone.trim()) { setContactError('enter a phone number'); return }
     setContactError('')
     const { error } = await supabase.from('contact_captures').insert({
       value: contactPhone.trim(),
