@@ -134,6 +134,11 @@ export default function MapPage() {
   // so repeat visitors within a tab session skip it entirely.
   const [mounted, setMounted] = useState(false)
   const [animDone, setAnimDone] = useState(true) // assume done until mount confirms otherwise
+  // Contact capture popup — shown after 60s if user hasn't already submitted/dismissed
+  const [showContactModal, setShowContactModal] = useState(false)
+  const [contactPhone, setContactPhone] = useState('')
+  const [contactError, setContactError] = useState('')
+  const [contactSubmitted, setContactSubmitted] = useState(false)
 
   // Unique sorted genres from loaded sets
   const genres = Array.from(new Set(sets.map(s => s.acts?.genre).filter(Boolean) as string[])).sort()
@@ -195,6 +200,35 @@ export default function MapPage() {
     }, 2900)
     return () => clearTimeout(t)
   }, [mounted, animDone])
+
+  // Contact capture popup — fires after 60s on map, skipped if already seen
+  useEffect(() => {
+    if (localStorage.getItem('pulsed_contact_shown')) return
+    const t = setTimeout(() => setShowContactModal(true), 60_000)
+    return () => clearTimeout(t)
+  }, [])
+
+  async function handleContactSubmit() {
+    if (!contactPhone.trim()) return
+    setContactError('')
+    const { error } = await supabase.from('contact_captures').insert({
+      value: contactPhone.trim(),
+      capture_type: 'phone',
+      source: 'map-popup',
+    })
+    if (error) {
+      setContactError('something went wrong — try again')
+      return
+    }
+    localStorage.setItem('pulsed_contact_shown', '1')
+    setContactSubmitted(true)
+    setTimeout(() => setShowContactModal(false), 1500)
+  }
+
+  function handleContactDismiss() {
+    localStorage.setItem('pulsed_contact_shown', '1')
+    setShowContactModal(false)
+  }
 
   // Init map once
   useEffect(() => {
@@ -470,6 +504,10 @@ export default function MapPage() {
         @keyframes popupSlideUp {
           0%   { transform: translateX(-50%) translateY(16px); opacity: 0; }
           100% { transform: translateX(-50%) translateY(0);    opacity: 1; }
+        }
+        @keyframes modalSlideUp {
+          0%   { transform: translateY(16px); opacity: 0; }
+          100% { transform: translateY(0);    opacity: 1; }
         }
         @keyframes liveBadgePulse {
           0%, 100% { box-shadow: 0 0 0 0 rgba(255,140,0,0.55); }
@@ -1339,6 +1377,103 @@ export default function MapPage() {
         </div>
 
         {/* ── Botanical overlays — removed pending new inspiration ── */}
+
+        {/* ── Contact capture popup — shown after 60s on first visit ── */}
+        {showContactModal && (
+          <div
+            onClick={e => { if (e.target === e.currentTarget) handleContactDismiss() }}
+            style={{
+              position: 'fixed', inset: 0, zIndex: 2000,
+              background: 'rgba(27,36,36,0.55)',
+              backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 24px',
+            }}>
+            <div style={{
+              borderRadius: 16, padding: 2,
+              background: VHDA_STRIPE_H, backgroundSize: '270px 100%',
+              boxShadow: '0 8px 40px rgba(27,36,36,0.28)',
+              width: '100%', maxWidth: 370,
+              animation: 'modalSlideUp 0.28s cubic-bezier(0.22,1,0.36,1) both',
+            }}>
+              <div style={{
+                background: 'rgba(233,232,228,0.98)',
+                borderRadius: 14, padding: '28px 24px',
+                fontFamily: "'JetBrains Mono', monospace",
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 16 }}>
+                  <span style={{
+                    fontSize: 10, padding: '3px 10px', borderRadius: 20,
+                    background: 'rgba(255,140,0,0.1)', color: '#ff8c00',
+                    fontWeight: 600, letterSpacing: '0.08em',
+                  }}>
+                    pulsed
+                  </span>
+                  <button
+                    onClick={handleContactDismiss}
+                    style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, padding: '8px 10px', margin: '-8px -10px', lineHeight: 1 }}
+                  >✕</button>
+                </div>
+
+                <div style={{
+                  fontSize: 18, fontFamily: "'Montserrat', sans-serif",
+                  fontWeight: 700, color: '#1b2424', marginBottom: 8, lineHeight: 1.3,
+                }}>
+                  live music is happening in atlanta.
+                </div>
+                <div style={{ fontSize: 12, color: NAVY_TEXT, marginBottom: 20, lineHeight: 1.7 }}>
+                  you just can't always find it. we're building a real-time map of what's live, right now, across the city. leave your number — we'll tell you when it's ready.
+                </div>
+
+                {contactSubmitted ? (
+                  <div style={{
+                    textAlign: 'center', fontSize: 14, color: '#426368',
+                    fontWeight: 700, padding: '12px 0',
+                    fontFamily: "'Montserrat', sans-serif",
+                  }}>
+                    you're in ✓
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="tel"
+                      placeholder="(404) 000-0000"
+                      value={contactPhone}
+                      onChange={e => setContactPhone(e.target.value)}
+                      onKeyDown={e => e.key === 'Enter' && handleContactSubmit()}
+                      style={{
+                        width: '100%', boxSizing: 'border-box',
+                        padding: '12px 14px', borderRadius: 10,
+                        border: `1.5px solid ${IVORY_BORDER}`,
+                        fontFamily: "'JetBrains Mono', monospace", fontSize: 14,
+                        background: '#fff', color: '#1b2424',
+                        marginBottom: contactError ? 6 : 10,
+                        outline: 'none',
+                      }}
+                    />
+                    {contactError && (
+                      <div style={{ fontSize: 11, color: '#e03c3c', marginBottom: 8 }}>
+                        {contactError}
+                      </div>
+                    )}
+                    <button
+                      onClick={handleContactSubmit}
+                      style={{
+                        width: '100%', padding: '13px', borderRadius: 10,
+                        background: '#426368', color: '#fff', border: 'none',
+                        fontFamily: "'JetBrains Mono', monospace",
+                        fontWeight: 700, fontSize: 13, letterSpacing: '0.06em',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      follow the signal →
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </>
