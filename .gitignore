@@ -40,3 +40,13 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 .gstack/
+
+# local tool configs
+.agents/
+.junie/
+.claude/launch.json
+.claude/skills/
+.design-audit/
+
+# client / project files
+VAHI District/
