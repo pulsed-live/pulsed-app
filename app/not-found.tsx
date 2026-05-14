@@ -2,7 +2,7 @@ export default function NotFound() {
   return (
     <div style={{
       minHeight: '100vh',
-      background: '#0a0a0f',
+      background: '#ffffff',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -12,14 +12,17 @@ export default function NotFound() {
       textAlign: 'center',
     }}>
 
-      {/* Wordmark */}
+      {/* Wordmark — orange gradient */}
       <div style={{
         fontSize: 11,
         fontWeight: 700,
         letterSpacing: '0.3em',
-        color: '#ff8c00',
         textTransform: 'uppercase',
         marginBottom: 32,
+        background: 'linear-gradient(90deg, #ff8c00, #ff6b20)',
+        WebkitBackgroundClip: 'text',
+        WebkitTextFillColor: 'transparent',
+        backgroundClip: 'text',
       }}>
         PULSED
       </div>
@@ -28,7 +31,7 @@ export default function NotFound() {
       <div style={{
         fontSize: 96,
         fontWeight: 700,
-        color: '#1a1a2e',
+        color: '#e8e8e8',
         lineHeight: 1,
         letterSpacing: '-0.04em',
         userSelect: 'none',
@@ -41,7 +44,7 @@ export default function NotFound() {
         marginTop: 24,
         fontSize: 18,
         fontWeight: 600,
-        color: '#f0f0f0',
+        color: '#111',
         letterSpacing: '-0.02em',
       }}>
         lost in the noise?
@@ -49,7 +52,7 @@ export default function NotFound() {
       <p style={{
         marginTop: 8,
         fontSize: 13,
-        color: '#555',
+        color: '#999',
         maxWidth: 280,
         lineHeight: 1.6,
       }}>
@@ -63,8 +66,8 @@ export default function NotFound() {
           marginTop: 36,
           display: 'inline-block',
           padding: '12px 28px',
-          background: '#ff8c00',
-          color: '#000',
+          background: 'linear-gradient(90deg, #ff8c00, #ff6b20)',
+          color: '#fff',
           fontFamily: "'JetBrains Mono', monospace",
           fontSize: 13,
           fontWeight: 700,
