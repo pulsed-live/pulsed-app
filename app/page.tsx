@@ -113,10 +113,50 @@ const IVORY_BORDER = 'rgba(66,99,104,0.14)'
 const IVORY_SHADOW = '0 2px 16px rgba(66,99,104,0.22), 0 1px 4px rgba(66,99,104,0.12)'
 const NAVY_TEXT = 'rgba(66,99,104,0.55)'
 
+// ── Prelude config ──────────────────────────────────────────────────────────
+// Two DJ sets on May 15 (evening) / into May 16 (early AM). All times in UTC.
+// EDT = UTC-4. These are hardcoded because they're fixed, one-time events.
+const PRELUDE_CONFIG = [
+  {
+    id: 'atkins-park-prelude',
+    name: 'Atkins Park',
+    address: '794 N Highland Ave NE, Atlanta, GA 30306',
+    lat: 33.7758,
+    lng: -84.3526,
+    logo: '/prelude/atkins-park.webp',
+    timeLabel: '5–7 PM',
+    startsAt: new Date('2026-05-15T21:00:00Z'), // 5:00 PM EDT
+    endsAt:   new Date('2026-05-15T23:00:00Z'), // 7:00 PM EDT
+  },
+  {
+    id: 'neighbors-pub-prelude',
+    name: "Neighbor's Pub",
+    address: '201 Hurt St NE, Atlanta, GA 30307',
+    lat: 33.7749757,
+    lng: -84.3527811,
+    logo: '/prelude/neighbors-pub.png',
+    timeLabel: '10 PM–1:30 AM',
+    startsAt: new Date('2026-05-16T02:00:00Z'), // 10:00 PM EDT May 15
+    endsAt:   new Date('2026-05-16T05:30:00Z'), //  1:30 AM EDT May 16
+  },
+] as const
+
+type PreludeVenue = typeof PRELUDE_CONFIG[number]
+
+// Main porchfest event day — sets on this UTC date are hidden during prelude
+const MAIN_EVENT_UTC_DATE = '2026-05-16'
+
+function getActivePrelude(): PreludeVenue | null {
+  const now = Date.now()
+  return PRELUDE_CONFIG.find(p => now >= p.startsAt.getTime() && now <= p.endsAt.getTime()) ?? null
+}
+// ────────────────────────────────────────────────────────────────────────────
+
 export default function MapPage() {
   const mapRef = useRef<HTMLDivElement>(null)
   const leafletMap = useRef<any>(null)
   const markersRef = useRef<any[]>([])
+  const preludeMarkersRef = useRef<any[]>([])  // separate layer — not cleared by sets re-render
   const locationLatLngRef = useRef<any>(null)   // user's GPS location
   const hasFitRef = useRef(false)               // has the map auto-fitted to pins yet?
   const [sets, setSets] = useState<SetRow[]>([])
@@ -124,6 +164,7 @@ export default function MapPage() {
   const [selected, setSelected] = useState<SetRow | null>(null)
   const [selectedVenueSets, setSelectedVenueSets] = useState<SetRow[]>([])
   const [selectedSponsor, setSelectedSponsor] = useState<Sponsor | null>(null)
+  const [selectedPrelude, setSelectedPrelude] = useState<PreludeVenue | null>(null)
   const [loaded, setLoaded] = useState(false)
   const [filterLive, setFilterLive] = useState(false)
   const [filterGenre, setFilterGenre] = useState<string | null>(null)
@@ -139,12 +180,22 @@ export default function MapPage() {
   const [contactPhone, setContactPhone] = useState('')
   const [contactError, setContactError] = useState('')
   const [contactSubmitted, setContactSubmitted] = useState(false)
+  // Prelude: which (if any) prelude event is currently active
+  const [activePrelude, setActivePrelude] = useState<PreludeVenue | null>(() => getActivePrelude())
 
   // Unique sorted genres from loaded sets
   const genres = Array.from(new Set(sets.map(s => s.acts?.genre).filter(Boolean) as string[])).sort()
 
-  // Sets visible on map after filters applied
+  // Sets visible on map after filters applied.
+  // When a prelude is live, hide main-event-day (May 16) pins — prelude dots replace them.
   const filteredSets = sets.filter(set => {
+    if (activePrelude) {
+      // Hide all sets that fall on May 16 EDT (midnight–midnight EDT = 04:00 UTC May 16 to 04:00 UTC May 17)
+      const t = new Date(set.starts_at).getTime()
+      const dayStart = new Date('2026-05-16T04:00:00Z').getTime()
+      const dayEnd   = new Date('2026-05-17T04:00:00Z').getTime()
+      if (t >= dayStart && t < dayEnd) return false
+    }
     if (filterLive && effectiveStatus(set) !== 'live') return false
     if (filterGenre && set.acts?.genre !== filterGenre) return false
     if (filterTime !== null && new Date(set.starts_at).getUTCHours() !== filterTime) return false
@@ -192,6 +243,25 @@ export default function MapPage() {
     setAnimDone(false)
   }, [])
 
+  // Track page view once per session for organizer stats
+  useEffect(() => {
+    try {
+      const key = 'pulsed_session_id'
+      let sid = sessionStorage.getItem(key)
+      if (!sid) {
+        sid = Math.random().toString(36).slice(2) + Date.now().toString(36)
+        sessionStorage.setItem(key, sid)
+        fetch('/api/track-view', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ event_id: 'vhpf2026', session_id: sid }),
+        }).catch(() => {}) // fire-and-forget, never block the UI
+      }
+    } catch {
+      // sessionStorage unavailable (private browsing edge case) — skip silently
+    }
+  }, [])
+
   // Dismiss landing animation — total duration ~2.9 s (longer dark pause + longer clash)
   useEffect(() => {
     if (!mounted || animDone) return
@@ -203,7 +273,7 @@ export default function MapPage() {
 
   // Contact capture popup — fires after 60s on map, skipped if already seen
   useEffect(() => {
-    if (localStorage.getItem('pulsed_contact_shown')) return
+    if (localStorage.getItem('pulsed_popup_v2')) return
     const t = setTimeout(() => setShowContactModal(true), 60_000)
     return () => clearTimeout(t)
   }, [])
@@ -220,13 +290,13 @@ export default function MapPage() {
       setContactError('something went wrong — try again')
       return
     }
-    localStorage.setItem('pulsed_contact_shown', '1')
+    localStorage.setItem('pulsed_popup_v2', '1')
     setContactSubmitted(true)
     setTimeout(() => setShowContactModal(false), 1500)
   }
 
   function handleContactDismiss() {
-    localStorage.setItem('pulsed_contact_shown', '1')
+    localStorage.setItem('pulsed_popup_v2', '1')
     setShowContactModal(false)
   }
 
@@ -335,6 +405,14 @@ export default function MapPage() {
     }
   }, [])
 
+  // Prelude time-check — runs every 30s (same cadence as sets poll)
+  useEffect(() => {
+    const check = () => setActivePrelude(getActivePrelude())
+    check()
+    const interval = setInterval(check, 30_000)
+    return () => clearInterval(interval)
+  }, [])
+
   // Auto-fit removed — map opens centered on Va-Hi at zoom 15
 
   // Update markers when sets or filters change
@@ -367,7 +445,9 @@ export default function MapPage() {
         const isLiveOrLate = topStatus === 'live' || topStatus === 'running_late'
 
         const isMulti = venueSets.length > 1
-        const pinSize = isMulti ? 18 : 14
+        // Business venues have a distinct name stored (name !== address)
+        const isBusiness = !!(venue.name && venue.name !== venue.address)
+        const pinSize = isBusiness ? 18 : (isMulti ? 18 : 14)
         const pinHalf = pinSize / 2
 
         // Multi-act: use next-up color so pin reflects who's playing now/next
@@ -377,46 +457,83 @@ export default function MapPage() {
             ? nextUpColor(venueSets)
             : slotColor(topSet)
 
-        const icon = L.divIcon({
-          className: '',
-          html: `
-            <div style="position: relative; width: ${pinSize}px; height: ${pinSize}px; overflow: visible;">
-              ${isLiveOrLate ? `
-              <div style="
-                position: absolute;
-                top: 0; left: 0;
+        // Business pins: square + name label below. Porch pins: circle.
+        const pinHtml = isBusiness ? `
+          <div style="display: flex; flex-direction: column; align-items: center; width: 100px; overflow: visible;">
+            <div style="position: relative; width: ${pinSize}px; height: ${pinSize}px;">
+              ${isLiveOrLate ? `<div style="
+                position: absolute; top: 0; left: 0;
                 width: ${pinSize}px; height: ${pinSize}px;
-                border-radius: 50%;
+                border-radius: 4px;
                 border: 2px solid ${color};
                 animation: liveRipple 2s ease-out infinite;
                 pointer-events: none;
               "></div>` : ''}
               <div style="
-                position: relative;
-                z-index: 1;
-                width: ${pinSize}px;
-                height: ${pinSize}px;
-                border-radius: 50%;
+                position: relative; z-index: 1;
+                width: ${pinSize}px; height: ${pinSize}px;
+                border-radius: 4px;
                 background: ${isLiveOrLate ? color : color + '2e'};
                 border: 2px solid ${color};
                 box-shadow: ${isLiveOrLate ? `0 0 10px ${color}88, 0 0 20px ${color}44` : 'none'};
                 opacity: ${isCancelled ? '0.55' : '1'};
                 cursor: pointer;
-                display: flex; align-items: center; justify-content: center;
-              ">${isMulti ? `<span style="
-                font-size: 9px; font-weight: 700; font-family: monospace;
-                color: #e9e8e4; line-height: 1; pointer-events: none;
-                text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-              ">${venueSets.length}</span>` : ''}</div>
+              "></div>
             </div>
-          `,
-          iconSize: [pinSize, pinSize],
-          iconAnchor: [pinHalf, pinHalf],
+            <div style="
+              margin-top: 2px;
+              font-size: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+              color: ${color};
+              background: rgba(233,232,228,0.95);
+              padding: 1px 5px; border-radius: 3px;
+              white-space: nowrap;
+              max-width: 96px; overflow: hidden; text-overflow: ellipsis;
+              letter-spacing: 0.01em;
+              opacity: ${isCancelled ? '0.55' : '1'};
+            ">${venue.name}</div>
+          </div>
+        ` : `
+          <div style="position: relative; width: ${pinSize}px; height: ${pinSize}px; overflow: visible;">
+            ${isLiveOrLate ? `
+            <div style="
+              position: absolute;
+              top: 0; left: 0;
+              width: ${pinSize}px; height: ${pinSize}px;
+              border-radius: 50%;
+              border: 2px solid ${color};
+              animation: liveRipple 2s ease-out infinite;
+              pointer-events: none;
+            "></div>` : ''}
+            <div style="
+              position: relative;
+              z-index: 1;
+              width: ${pinSize}px;
+              height: ${pinSize}px;
+              border-radius: 50%;
+              background: ${isLiveOrLate ? color : color + '2e'};
+              border: 2px solid ${color};
+              box-shadow: ${isLiveOrLate ? `0 0 10px ${color}88, 0 0 20px ${color}44` : 'none'};
+              opacity: ${isCancelled ? '0.55' : '1'};
+              cursor: pointer;
+              display: flex; align-items: center; justify-content: center;
+            ">${isMulti ? `<span style="
+              font-size: 9px; font-weight: 700; font-family: monospace;
+              color: #e9e8e4; line-height: 1; pointer-events: none;
+              text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+            ">${venueSets.length}</span>` : ''}</div>
+          </div>
+        `
+
+        const icon = L.divIcon({
+          className: '',
+          html: pinHtml,
+          iconSize: isBusiness ? [100, 36] : [pinSize, pinSize],
+          iconAnchor: isBusiness ? [50, 9] : [pinHalf, pinHalf],
         })
 
         const marker = L.marker([venue.lat, venue.lng], { icon })
           .addTo(leafletMap.current)
-          .on('click', () => { setSelected(topSet); setSelectedVenueSets(venueSets); setSelectedSponsor(null) })
+          .on('click', () => { setSelected(topSet); setSelectedVenueSets(venueSets); setSelectedSponsor(null); setSelectedPrelude(null) })
 
         markersRef.current.push(marker)
       })
@@ -457,12 +574,89 @@ export default function MapPage() {
 
         const marker = L.marker([sponsor.lat, sponsor.lng], { icon: sponsorIcon, zIndexOffset: 500 })
           .addTo(leafletMap.current)
-          .on('click', () => { setSelectedSponsor(sponsor); setSelected(null) })
+          .on('click', () => { setSelectedSponsor(sponsor); setSelected(null); setSelectedPrelude(null) })
 
         markersRef.current.push(marker)
       })
     })
   }, [filteredSets, loaded, sponsors])
+
+  // Prelude dots — independent layer, not cleared by sets re-render
+  useEffect(() => {
+    if (!loaded || !leafletMap.current) return
+
+    import('leaflet').then(L => {
+      // Clear old prelude markers
+      preludeMarkersRef.current.forEach(m => m.remove())
+      preludeMarkersRef.current = []
+
+      if (!activePrelude) return
+
+      const p = activePrelude
+      const SIZE = 48
+      const HALF = SIZE / 2
+
+      const html = `
+        <div style="display: flex; flex-direction: column; align-items: center; width: 100px; overflow: visible; cursor: pointer;">
+          <div style="position: relative; width: ${SIZE}px; height: ${SIZE}px;">
+            <div style="
+              position: absolute; top: 0; left: 0;
+              width: ${SIZE}px; height: ${SIZE}px;
+              border-radius: 50%;
+              border: 2.5px solid #ff8c00;
+              animation: liveRipple 1.8s ease-out infinite;
+              pointer-events: none;
+            "></div>
+            <div style="
+              position: absolute; top: 0; left: 0;
+              width: ${SIZE}px; height: ${SIZE}px;
+              border-radius: 50%;
+              border: 2.5px solid #ff8c00;
+              animation: liveRipple 1.8s ease-out infinite 0.6s;
+              pointer-events: none;
+            "></div>
+            <div style="
+              position: relative; z-index: 1;
+              width: ${SIZE}px; height: ${SIZE}px;
+              border-radius: 50%;
+              overflow: hidden;
+              border: 2.5px solid #ff8c00;
+              box-shadow: 0 0 14px rgba(255,140,0,0.55), 0 0 28px rgba(255,140,0,0.25);
+              background: #ffffff;
+            ">
+              <img src="${p.logo}" alt="${p.name}" style="width: 100%; height: 100%; object-fit: cover;" />
+            </div>
+          </div>
+          <div style="
+            margin-top: 4px;
+            font-size: 8px; font-family: 'JetBrains Mono', monospace; font-weight: 700;
+            color: #ff8c00;
+            background: rgba(233,232,228,0.96);
+            padding: 2px 6px; border-radius: 4px;
+            white-space: nowrap;
+            letter-spacing: 0.04em;
+          ">${p.name}</div>
+        </div>
+      `
+
+      const icon = L.divIcon({
+        className: '',
+        html,
+        iconSize: [100, 64],
+        iconAnchor: [50, HALF],
+      })
+
+      const marker = L.marker([p.lat, p.lng], { icon, zIndexOffset: 1000 })
+        .addTo(leafletMap.current)
+        .on('click', () => {
+          setSelectedPrelude(p)
+          setSelected(null)
+          setSelectedSponsor(null)
+        })
+
+      preludeMarkersRef.current.push(marker)
+    })
+  }, [activePrelude, loaded])
 
   const pillBase: React.CSSProperties = {
     flexShrink: 0,
@@ -768,7 +962,7 @@ export default function MapPage() {
         </div>
 
         {/* ── No-results message ── */}
-        {sets.length > 0 && filteredSets.length === 0 && (
+        {sets.length > 0 && filteredSets.length === 0 && !activePrelude && (
           <div style={{
             position: 'absolute', top: '50%', left: '50%',
             transform: 'translate(-50%, -50%)',
@@ -859,10 +1053,21 @@ export default function MapPage() {
               {selected.acts?.genre}
             </div>
 
-            <div style={{ fontSize: 11, color: NAVY_TEXT, opacity: 0.7, marginBottom: 10 }}>
-              {selected.venues?.name && selected.venues.name !== selected.venues.address
-                ? selected.venues.name
-                : selected.venues?.address}
+            <div style={{ marginBottom: 10 }}>
+              {selected.venues?.name && selected.venues.name !== selected.venues.address ? (
+                <>
+                  <div style={{ fontSize: 11, color: NAVY_TEXT, fontWeight: 600, marginBottom: 2 }}>
+                    {selected.venues.name}
+                  </div>
+                  <div style={{ fontSize: 10, color: NAVY_TEXT, opacity: 0.55 }}>
+                    {selected.venues.address}
+                  </div>
+                </>
+              ) : (
+                <div style={{ fontSize: 11, color: NAVY_TEXT, opacity: 0.7 }}>
+                  {selected.venues?.address}
+                </div>
+              )}
             </div>
 
             <div style={{ fontSize: 12, color: NAVY_TEXT, marginBottom: selectedVenueSets.length > 1 ? 10 : (selected.acts?.link ? 14 : 0) }}>
@@ -1036,6 +1241,90 @@ export default function MapPage() {
           </div>
         )}
 
+        {/* ── Prelude popup — floats above filter bar ── */}
+        {selectedPrelude && (
+          <div style={{
+            position: 'absolute',
+            bottom: 'calc(226px + env(safe-area-inset-bottom, 0px))',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            zIndex: 1000,
+            borderRadius: 16, padding: 2,
+            background: 'linear-gradient(90deg, #ff8c00, #C17C2E, #ff8c00)',
+            backgroundSize: '270px 100%',
+            boxShadow: '0 6px 28px rgba(255,140,0,0.22)',
+            animation: 'popupSlideUp 0.22s cubic-bezier(0.22,1,0.36,1) both',
+          }}>
+          <div style={{
+            background: 'rgba(233,232,228,0.97)',
+            backdropFilter: 'blur(18px)',
+            WebkitBackdropFilter: 'blur(18px)',
+            borderRadius: 14,
+            padding: '20px 24px',
+            minWidth: 290,
+            maxWidth: 370,
+            fontFamily: "'JetBrains Mono', monospace",
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+              <span style={{
+                fontSize: 10, padding: '3px 10px', borderRadius: 20,
+                background: 'rgba(255,140,0,0.12)', color: '#ff8c00',
+                letterSpacing: '0.08em', fontWeight: 700,
+                display: 'inline-flex', alignItems: 'center', gap: 5,
+                animation: 'liveBadgePulse 1.8s ease-in-out infinite',
+              }}>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#ff8c00', display: 'inline-block', flexShrink: 0 }} />
+                prelude · live now
+              </span>
+              <button
+                onClick={() => setSelectedPrelude(null)}
+                style={{ background: 'none', border: 'none', color: NAVY_TEXT, cursor: 'pointer', fontSize: 16, lineHeight: 1, padding: '8px 10px', margin: '-8px -10px' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 14 }}>
+              <div style={{
+                width: 52, height: 52, borderRadius: '50%', overflow: 'hidden', flexShrink: 0,
+                border: '2px solid #ff8c00',
+                boxShadow: '0 0 12px rgba(255,140,0,0.35)',
+              }}>
+                <img src={selectedPrelude.logo} alt={selectedPrelude.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+              <div>
+                <div style={{ fontSize: 18, fontFamily: "'Montserrat', sans-serif", fontWeight: 600, color: '#1b2424', marginBottom: 2 }}>
+                  {selectedPrelude.name}
+                </div>
+                <div style={{ fontSize: 11, color: NAVY_TEXT, fontFamily: "'Montserrat', sans-serif" }}>
+                  DJ Set · {selectedPrelude.timeLabel}
+                </div>
+              </div>
+            </div>
+
+            <div style={{ fontSize: 10, color: NAVY_TEXT, opacity: 0.65, marginBottom: 14 }}>
+              {selectedPrelude.address}
+            </div>
+
+            <a
+              href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(selectedPrelude.address)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'inline-block', fontSize: 11,
+                color: '#ff8c00',
+                background: 'rgba(255,140,0,0.07)',
+                border: '1px solid rgba(255,140,0,0.25)',
+                borderRadius: 20, padding: '5px 14px',
+                textDecoration: 'none', letterSpacing: '0.05em',
+              }}
+            >
+              directions →
+            </a>
+          </div>
+          </div>
+        )}
+
         {/* ── "Find a Pulse" pill ── */}
         <div style={{
           position: 'absolute',
@@ -1044,6 +1333,7 @@ export default function MapPage() {
           transform: 'translateX(-50%)',
           zIndex: 1001,
           width: 'calc(100vw - 28px)',
+          display: activePrelude ? 'none' : undefined,
         }}>
           {/* Stripe border — matches header card: padding 3, radius 13 */}
           <div style={{
@@ -1419,10 +1709,10 @@ export default function MapPage() {
                   fontSize: 18, fontFamily: "'Montserrat', sans-serif",
                   fontWeight: 700, color: '#1b2424', marginBottom: 8, lineHeight: 1.3,
                 }}>
-                  live music is happening in atlanta.
+                  hey, i'm Kent. i built this.
                 </div>
                 <div style={{ fontSize: 12, color: NAVY_TEXT, marginBottom: 20, lineHeight: 1.7 }}>
-                  you just can't always find it. we're building a real-time map of what's live, right now, across the city. leave your number — we'll tell you when it's ready.
+                  fresh out of Emory, building Pulsed solo because Atlanta's live music scene deserved a real-time map. the goal: every bar, venue, and stage in the city, every night. no team, no investors, no safety net. if it was worth it to you, even a few dollars helps me keep building.
                 </div>
 
                 {contactSubmitted ? (
@@ -1468,6 +1758,20 @@ export default function MapPage() {
                     >
                       follow the signal →
                     </button>
+                    <a
+                      href="https://buy.stripe.com/cNi00d5ozabZ3yR0G5gUM00"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'block', textAlign: 'center', marginTop: 12,
+                        fontSize: 12, color: '#ff8c00', opacity: 0.85,
+                        fontFamily: "'JetBrains Mono', monospace",
+                        textDecoration: 'none', letterSpacing: '0.04em',
+                        cursor: 'pointer', fontWeight: 600,
+                      }}
+                    >
+                      chip in and support the build →
+                    </a>
                   </>
                 )}
               </div>
