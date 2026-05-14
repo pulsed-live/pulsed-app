@@ -274,7 +274,7 @@ export default function MapPage() {
   // Contact capture popup — fires after 60s on map, skipped if already seen
   useEffect(() => {
     if (localStorage.getItem('pulsed_popup_v2')) return
-    const t = setTimeout(() => setShowContactModal(true), 60_000)
+    const t = setTimeout(() => setShowContactModal(true), 30_000)
     return () => clearTimeout(t)
   }, [])
 
