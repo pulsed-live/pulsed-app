@@ -160,7 +160,7 @@ export default async function StatsPage({
           </span>
           <span style={{ color: '#333', fontSize: 11 }}>·</span>
           <a
-            href="https://maps.pulsedapp.live"
+            href="https://map.pulsedapp.live"
             style={{ fontSize: 11, color: '#666', textDecoration: 'none' }}
           >
             Open live map →
@@ -362,7 +362,7 @@ export default async function StatsPage({
           Real-time data via Pulsed
         </span>
         <a
-          href="https://maps.pulsedapp.live"
+          href="https://map.pulsedapp.live"
           style={{
             fontSize: 12,
             color: '#ff8c00',
