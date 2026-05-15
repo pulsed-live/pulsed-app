@@ -273,7 +273,7 @@ export default function MapPage() {
 
   // Contact capture popup — fires after 60s on map, skipped if already seen
   useEffect(() => {
-    if (localStorage.getItem('pulsed_popup_v2')) return
+    if (localStorage.getItem('pulsed_popup_v3')) return
     const t = setTimeout(() => setShowContactModal(true), 30_000)
     return () => clearTimeout(t)
   }, [])
@@ -290,13 +290,13 @@ export default function MapPage() {
       setContactError('something went wrong — try again')
       return
     }
-    localStorage.setItem('pulsed_popup_v2', '1')
+    localStorage.setItem('pulsed_popup_v3', '1')
     setContactSubmitted(true)
     setTimeout(() => setShowContactModal(false), 1500)
   }
 
   function handleContactDismiss() {
-    localStorage.setItem('pulsed_popup_v2', '1')
+    localStorage.setItem('pulsed_popup_v3', '1')
     setShowContactModal(false)
   }
 
