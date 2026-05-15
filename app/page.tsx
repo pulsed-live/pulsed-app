@@ -1763,11 +1763,14 @@ export default function MapPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{
-                        display: 'block', textAlign: 'center', marginTop: 12,
-                        fontSize: 12, color: '#ff8c00', opacity: 0.85,
+                        display: 'block', textAlign: 'center', marginTop: 10,
+                        padding: '11px', borderRadius: 10,
+                        background: 'rgba(255,140,0,0.12)',
+                        border: '1px solid rgba(255,140,0,0.35)',
+                        fontSize: 13, color: '#ff8c00',
                         fontFamily: "'JetBrains Mono', monospace",
                         textDecoration: 'none', letterSpacing: '0.04em',
-                        cursor: 'pointer', fontWeight: 600,
+                        cursor: 'pointer', fontWeight: 700,
                       }}
                     >
                       chip in and support the build →
